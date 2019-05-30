@@ -31,36 +31,61 @@ class BasicBlock(object):
 		self.clearMemory()												# same as clear
 		self.memoryVariableCreated = False 								# allocated memory
 		self.debug = debug
-
+		self.tokeniser = Tokeniser()									# tokenises things
+		self.variables = {}												# variable info
+	#
+	#	Erase all variables and code
+	#
 	def clearMemory(self):
 		for v in range(ord('@'),ord('Z')+1):							# zero fast variables
 			self.setFastVariable(chr(v),0)
-		self.writeWord(self.baseAddress+0xA0,self.baseAddress+0xC8)		# reset low memory
 		self.writeWord(self.baseAddress+0xA2,self.endAddress)			# reset high memory
 		self.writeWord(self.baseAddress+0xC0,0x0000)					# erase program
-
+		self.resetLowMemory()
+	#
+	#	Rewrite the spacer and low memory
+	#
+	def resetLowMemory(self):
+		ptr = self.baseAddress+0xC0 									# Where code starts
+		while self.readWord(ptr) != 0x0000:								# follow the code link chain
+			ptr += ptr + self.readWord(ptr)
+		self.writeWord(ptr+2,0xEEEE)									# write EEEE twice after it
+		self.writeWord(ptr+4,0xEEEE)
+		self.writeWord(self.baseAddress+0xA0,ptr+6)						# free memory starts here.
+	#
+	#	Overwrite fast variable A-Z
+	#
 	def setFastVariable(self,variable,value):
-		assert re.match("^[\\@A-Z]$",variable) is not None
-		value = value & 0xFFFFFFFF
+		assert re.match("^[\\@A-Z]$",variable) is not None				# check is fast variable
+		value = value & 0xFFFFFFFF										# make 32 bit uint
 		self.writeWord(self.baseAddress+(ord(variable)-ord('@'))*4+4,value & 0xFFFF)
 		self.writeWord(self.baseAddress+(ord(variable)-ord('@'))*4+6,value >> 16)
-
+	#
+	#	Allocate low memory (e.g. from program end up)
+	#
 	def allocateLowMemory(self,count):
-		addr = self.readWord(self.baseAddress+0xA0)
-		self.writeWord(self.base+0xA0+count)
+		addr = self.readWord(self.baseAddress+0xA0)						# address to use
+		self.writeWord(self.baseAddress+0xA0,addr+count)				# update offset
 		assert self.readWord(self.baseAddress+0xA0) < self.readWord(self.baseAddress+0xA2)
 		return addr 
-
+	#
+	#	Allocate high memory (e.g. from top down)
+	#
 	def allocateHighMemory(self,count):
-		addr = self.readWord(self.baseAddress+0xA2) - count
-		self.writeWord(self.baseAddress+0xA2,addr)
+		addr = self.readWord(self.baseAddress+0xA2) - count				# address to use
+		self.writeWord(self.baseAddress+0xA2,addr)						# update new high address
 		assert self.readWord(self.baseAddress+0xA0) < self.readWord(self.baseAddress+0xA2)
-
+		return addr
+	#
+	#	Read a word from memory
+	#
 	def readWord(self,addr):
 		assert addr >= self.baseAddress and addr <= self.endAddress
 		addr = addr - self.baseAddress
-		return self.data[addr] + self.data[addr] * 256
-
+		return self.data[addr] + self.data[addr+1] * 256
+	#
+	#	Write a word to memory
+	#
 	def writeWord(self,addr,data):
 		assert addr >= self.baseAddress and addr <= self.endAddress
 		data = data & 0xFFFF
@@ -68,7 +93,50 @@ class BasicBlock(object):
 		self.data[addr-self.baseAddress+1] = data >> 8
 		if self.debug:
 			print("{0:04x} {1:04x}".format(addr,data))
-
+	#
+	#	Create a representation of an identifier in high memory.
+	#
+	def createIdentifierReference(self,name):
+		assert re.match("^[\\@A-Z][\\@A-Z0-9]*$",name.upper()) is not None # check legal variable name
+		assert len(name) > 1											# check not fast variable
+		tokens = self.tokeniser.tokenise(name)							# tokenise it
+		addr = self.allocateHighMemory(len(tokens)*2)					# allocate high mem for name
+		for i in range(0,len(tokens)):									# copy it (normally in program)
+			self.writeWord(addr+i*2,tokens[i])
+		return addr
+	#
+	#	Get hash for name at given address
+	#
+	def getHashEntry(self,nameAddr):
+		parts = self.readWord(nameAddr)									# first token word
+		eCalc = parts ^ (parts >> 8)									# xor bytes together
+		return ((eCalc & 15) * 2) + self.baseAddress + 0x80 			# convert to hash table address
+	#
+	#	Create variable, with optional array
+	#	
+	def createVariable(self,name,memoryAllocated = 0):
+		self.memoryVariableCreated = True 								# can't add more code
+		name = name.lower()
+		assert name != "" and name not in self.variables 				# check ok / not exists
+		nameAddr = self.createIdentifierReference(name)					# create tokenised version
+		hashAddr = self.getHashEntry(nameAddr)							# get hash address for variable
+		varAddr = self.allocateLowMemory(8)								# create memory for it
+		value = 0														# put this in
+		if memoryAllocated != 0:										# if not allocating memory for it
+			assert memoryAllocated > 0 and memoryAllocated % 2 == 0	
+			value = self.allocateLowMemory(memoryAllocated)				# alloc & clear memory
+			for i in range(0,memoryAllocated,2):
+				self.writeWord(value+i,0)
+		self.writeWord(varAddr+0,self.readWord(hashAddr))				# patch into hash linked list
+		self.writeWord(varAddr+2,nameAddr)
+		value = value & 0xFFFFFFFF
+		self.writeWord(varAddr+4,value & 0xFFFF)						# write data or address of allocated
+		self.writeWord(varAddr+6,value >> 16)
+		self.variables[name] = { "address":varAddr,"allocated":memoryAllocated }
+		self.writeWord(hashAddr,varAddr)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
+	blk.createVariable("tim23")
+	blk.createVariable("abc",8)
+
