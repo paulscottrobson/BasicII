@@ -121,7 +121,7 @@ class BasicBlock(object):
 	#
 	#	Create variable, with optional array
 	#	
-	def createVariable(self,name,memoryAllocated = 0):
+	def createVariable(self,name,initValue,memoryAllocated = 0):
 		self.memoryVariableCreated = True 										# can't add more code
 		name = name.lower()
 		assert name != "" and name not in self.variables 						# check ok / not exists
@@ -129,12 +129,21 @@ class BasicBlock(object):
 		hashAddr = self.getHashEntry(nameAddr)									# get hash address for variable
 	
 		varAddr = self.allocateLowMemory(8)										# create memory for it
-		value = 0																# put this in
+		value = initValue														# put this in
 		if memoryAllocated != 0:												# if not allocating memory for it
-			assert memoryAllocated > 0 and memoryAllocated % 2 == 0	
-			value = self.allocateLowMemory(memoryAllocated)						# alloc & clear memory
-			for i in range(0,memoryAllocated,2):
-				self.writeWord(value+i,0)
+			assert memoryAllocated > 0 and memoryAllocated % 2 == 0 			# check size
+			actual = memoryAllocated+4 if self.isProtected else memoryAllocated	# allow for protection
+			malloc = self.allocateLowMemory(actual)								# alloc memory
+			if self.isProtected:
+				self.writeWord(malloc+2,BasicBlock.PROTECTMARKER)				# protection marker
+				self.writeWord(malloc+0,memoryAllocated)						# size of memory
+				malloc += 4 													# skip over
+			for i in range(0,memoryAllocated,4):								# initaialise data memory
+				self.writeWord(malloc+i+0,initValue & 0xFFFF)
+				self.writeWord(malloc+i+2,initValue >> 16)
+				initValue += 0x10000
+			value = malloc 														# store this in variable
+
 		self.writeWord(varAddr+0,self.readWord(hashAddr))						# patch into hash linked list
 		self.writeWord(varAddr+2,nameAddr)
 		value = value & 0xFFFFFFFF
@@ -144,7 +153,7 @@ class BasicBlock(object):
 		self.writeWord(hashAddr,varAddr)
 
 BasicBlock.ID = "BASC"															# ID
-BasicBlock.PROTECTMARKER = 0xFECA												# Protected marker.
+BasicBlock.PROTECTMARKER = 0xCE4A												# Protected marker.
 BasicBlock.FASTVARIABLES = 0x04 												# Fast Variable Base
 BasicBlock.HASHTABLE = 0x80 													# Hash Table Base
 BasicBlock.LOWPTR = 0xA0 														# Low Memory Allocation
@@ -154,5 +163,5 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.createVariable("tim23")
-	blk.createVariable("abc",8)
+	blk.createVariable("tim23",42)
+	blk.createVariable("abc",1025,12)
