@@ -3,7 +3,7 @@
 ;
 ;		Name : 		basic.asm
 ;		Purpose : 	Basic start up
-;		Date :		2nd July 2019
+;		Date :		2nd June 2019
 ;		Author : 	paul@robsons.org.uk
 ;
 ; *******************************************************************************************
@@ -14,7 +14,13 @@ StartOfBasicCode:
 	.include "temp/tokens.inc"						; tokens include file (generated)
 	.include "temp/block.inc"						; block constants include file (generated)
 	.include "data.asm" 							; data definition.
-	
+	.include "expression.asm"
+	.include "binary/arithmetic.asm"				; binary arithmetic/string operators
+	.include "binary/bitwise.asm"
+	.include "binary/comparison.asm"
+	.include "binary/divide.asm"
+	.include "binary/multiply.asm"
+
 ; *******************************************************************************************
 ;
 ;							Enter BASIC / switch to new instance
@@ -39,10 +45,30 @@ SwitchBasicInstance:
 	plb
 	plb 
 
+	nop
+
+	ldy 	#BlockHighMemoryPtr 					; reset temp store pointer
+	lda 	(DBaseAddress),y
+	sec 											; allocate 256 bytes
+	sbc 	#256
+	sta 	DTempStringPtr 							; store as temporary string pointer.
+
+	lda 	#$40C0+8 								; initialise Code Pointer
+	sta 	DCodePtr 
+	ldx 	#EXSBase
+	lda 	#0<<9 									; current precedence level.
+
 halt1:
 	cop 	#0
 	bra 	halt1
 
 IllegalToken:
-	bra 	IllegalToken
+	jsr 	ReportError
+	.text 	"Bad token",0
+SyntaxError:
+	jsr 	ReportError
+	.text 	"Syntax Error",0
 	
+ReportError:
+	nop
+	bra 	ReportError
