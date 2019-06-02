@@ -1,7 +1,7 @@
 
 ; 64tass Turbo Assembler Macro V1.54.1900 listing file
 ; 64tass --m65816 -f -q -o basic.bin -L basic.lst ..\source\start.asm
-; Sun Jun 02 16:09:46 2019
+; Sun Jun 02 20:19:07 2019
 
 ;Offset	;Hex		;Monitor	;Source
 
@@ -17,7 +17,7 @@
 .000c	a9 02 00	lda #$0002		lda 	#CodeSpace >> 16 						; put the page number in A ($2)
 .000f	a2 00 40	ldx #$4000		ldx 	#CodeSpace & $FFFF 						; and the base address in X ($4000)
 .0012	a0 00 c0	ldy #$c000		ldy 	#CodeEndSpace & $FFFF					; and the end address in Y ($C000)
-.0015	5c 92 00 01	jmp $010092		jmp 	SwitchBasicInstance
+.0015	5c 86 00 01	jmp $010086		jmp 	SwitchBasicInstance
 
 ;******  Processing file: ..\source\basic.asm
 
@@ -26,109 +26,99 @@
 ;******  Processing file: ..\source\temp/tokens.inc
 
 .010000					CommandJumpTable:
->010000	a5 00					.word IllegalToken & $FFFF ; for the $0000 token.
->010002	a5 00					.word IllegalToken             & $FFFF ; token $4001 "and"
->010004	a5 00					.word IllegalToken             & $FFFF ; token $4002 "or"
->010006	a5 00					.word IllegalToken             & $FFFF ; token $4003 "xor"
->010008	a5 00					.word IllegalToken             & $FFFF ; token $4404 "<"
->01000a	a5 00					.word IllegalToken             & $FFFF ; token $4405 ">"
->01000c	a5 00					.word IllegalToken             & $FFFF ; token $4406 "="
->01000e	a5 00					.word IllegalToken             & $FFFF ; token $4407 "<="
->010010	a5 00					.word IllegalToken             & $FFFF ; token $4408 ">="
->010012	a5 00					.word IllegalToken             & $FFFF ; token $4409 "<>"
->010014	a5 00					.word IllegalToken             & $FFFF ; token $480a "+"
->010016	a5 00					.word IllegalToken             & $FFFF ; token $480b "-"
->010018	a5 00					.word IllegalToken             & $FFFF ; token $4c0c "*"
->01001a	a5 00					.word IllegalToken             & $FFFF ; token $4c0d "/"
->01001c	a5 00					.word IllegalToken             & $FFFF ; token $4c0e "mod"
->01001e	a5 00					.word IllegalToken             & $FFFF ; token $4c0f ">>"
->010020	a5 00					.word IllegalToken             & $FFFF ; token $4c10 "<<"
->010022	a5 00					.word IllegalToken             & $FFFF ; token $5011 "?"
->010024	a5 00					.word IllegalToken             & $FFFF ; token $5012 "!"
->010026	a5 00					.word IllegalToken             & $FFFF ; token $5013 "$"
->010028	a5 00					.word IllegalToken             & $FFFF ; token $7414 "rnd()"
->01002a	a5 00					.word IllegalToken             & $FFFF ; token $7415 "sgn("
->01002c	a5 00					.word IllegalToken             & $FFFF ; token $7416 "abs("
->01002e	a5 00					.word IllegalToken             & $FFFF ; token $7417 "len("
->010030	a5 00					.word IllegalToken             & $FFFF ; token $7818 ","
->010032	a5 00					.word IllegalToken             & $FFFF ; token $7819 ";"
->010034	a5 00					.word IllegalToken             & $FFFF ; token $781a ":"
->010036	a5 00					.word IllegalToken             & $FFFF ; token $781b "("
->010038	a5 00					.word IllegalToken             & $FFFF ; token $781c ")"
->01003a	a5 00					.word IllegalToken             & $FFFF ; token $7c1d "let"
-.01003c					TokenText:
->01003c	04 61 6e 64				 .text $04,"and"      ; token $4001
->010040	03 6f 72				 .text $03,"or"       ; token $4002
->010043	04 78 6f 72				 .text $04,"xor"      ; token $4003
->010047	12 3c					 .text $12,"<"        ; token $4404
->010049	12 3e					 .text $12,">"        ; token $4405
->01004b	12 3d					 .text $12,"="        ; token $4406
->01004d	13 3c 3d				 .text $13,"<="       ; token $4407
->010050	13 3e 3d				 .text $13,">="       ; token $4408
->010053	13 3c 3e				 .text $13,"<>"       ; token $4409
->010056	22 2b					 .text $22,"+"        ; token $480a
->010058	22 2d					 .text $22,"-"        ; token $480b
->01005a	32 2a					 .text $32,"*"        ; token $4c0c
->01005c	32 2f					 .text $32,"/"        ; token $4c0d
->01005e	34 6d 6f 64				 .text $34,"mod"      ; token $4c0e
->010062	33 3e 3e				 .text $33,">>"       ; token $4c0f
->010065	33 3c 3c				 .text $33,"<<"       ; token $4c10
->010068	42 3f					 .text $42,"?"        ; token $5011
->01006a	42 21					 .text $42,"!"        ; token $5012
->01006c	42 24					 .text $42,"$"        ; token $5013
->01006e	d6 72 6e 64 28 29			 .text $d6,"rnd()"    ; token $7414
->010074	d5 73 67 6e 28				 .text $d5,"sgn("     ; token $7415
->010079	d5 61 62 73 28				 .text $d5,"abs("     ; token $7416
->01007e	d5 6c 65 6e 28				 .text $d5,"len("     ; token $7417
->010083	e2 2c					 .text $e2,","        ; token $7818
->010085	e2 3b					 .text $e2,";"        ; token $7819
->010087	e2 3a					 .text $e2,":"        ; token $781a
->010089	e2 28					 .text $e2,"("        ; token $781b
->01008b	e2 29					 .text $e2,")"        ; token $781c
->01008d	f4 6c 65 74				 .text $f4,"let"      ; token $7c1d
->010091	00					.byte $00
-=$4001					andTokenID                       = $4001
-=$4002					orTokenID                        = $4002
-=$4003					xorTokenID                       = $4003
-=$4404					lessTokenID                      = $4404
-=$4405					greaterTokenID                   = $4405
-=$4406					equalTokenID                     = $4406
-=$4407					lessequalTokenID                 = $4407
-=$4408					greaterequalTokenID              = $4408
-=$4409					lessgreaterTokenID               = $4409
-=$480a					plusTokenID                      = $480a
-=$480b					minusTokenID                     = $480b
-=$4c0c					starTokenID                      = $4c0c
-=$4c0d					slashTokenID                     = $4c0d
-=$4c0e					modTokenID                       = $4c0e
-=$4c0f					greatergreaterTokenID            = $4c0f
-=$4c10					lesslessTokenID                  = $4c10
-=$5011					questionTokenID                  = $5011
-=$5012					plingTokenID                     = $5012
-=$5013					dollarTokenID                    = $5013
-=$7414					rndlparenrparenTokenID           = $7414
-=$7415					sgnlparenTokenID                 = $7415
-=$7416					abslparenTokenID                 = $7416
-=$7417					lenlparenTokenID                 = $7417
-=$7818					commaTokenID                     = $7818
-=$7819					semicolonTokenID                 = $7819
-=$781a					colonTokenID                     = $781a
-=$781b					lparenTokenID                    = $781b
-=$781c					rparenTokenID                    = $781c
-=$7c1d					letTokenID                       = $7c1d
+>010000	99 00					.word IllegalToken & $FFFF ; for the $0000 token.
+>010002	99 00					.word IllegalToken             & $FFFF ; token $2001 "and"
+>010004	99 00					.word IllegalToken             & $FFFF ; token $2002 "or"
+>010006	99 00					.word IllegalToken             & $FFFF ; token $2003 "xor"
+>010008	99 00					.word IllegalToken             & $FFFF ; token $2204 "<"
+>01000a	99 00					.word IllegalToken             & $FFFF ; token $2205 ">"
+>01000c	99 00					.word IllegalToken             & $FFFF ; token $2206 "="
+>01000e	99 00					.word IllegalToken             & $FFFF ; token $2207 "<="
+>010010	99 00					.word IllegalToken             & $FFFF ; token $2208 ">="
+>010012	99 00					.word IllegalToken             & $FFFF ; token $2209 "<>"
+>010014	99 00					.word IllegalToken             & $FFFF ; token $240a "+"
+>010016	99 00					.word IllegalToken             & $FFFF ; token $240b "-"
+>010018	99 00					.word IllegalToken             & $FFFF ; token $260c "*"
+>01001a	99 00					.word IllegalToken             & $FFFF ; token $260d "/"
+>01001c	99 00					.word IllegalToken             & $FFFF ; token $260e "mod"
+>01001e	99 00					.word IllegalToken             & $FFFF ; token $260f ">>"
+>010020	99 00					.word IllegalToken             & $FFFF ; token $2610 "<<"
+>010022	99 00					.word IllegalToken             & $FFFF ; token $3a11 "rnd()"
+>010024	99 00					.word IllegalToken             & $FFFF ; token $3a12 "sgn("
+>010026	99 00					.word IllegalToken             & $FFFF ; token $3a13 "abs("
+>010028	99 00					.word IllegalToken             & $FFFF ; token $3a14 "len("
+>01002a	99 00					.word IllegalToken             & $FFFF ; token $3c15 ","
+>01002c	99 00					.word IllegalToken             & $FFFF ; token $3c16 ";"
+>01002e	99 00					.word IllegalToken             & $FFFF ; token $3c17 ":"
+>010030	99 00					.word IllegalToken             & $FFFF ; token $3c18 "("
+>010032	99 00					.word IllegalToken             & $FFFF ; token $3c19 ")"
+>010034	99 00					.word IllegalToken             & $FFFF ; token $3e1a "let"
+.010036					TokenText:
+>010036	04 61 6e 64				.text $04,"and"      ; token $2001
+>01003a	03 6f 72				.text $03,"or"       ; token $2002
+>01003d	04 78 6f 72				.text $04,"xor"      ; token $2003
+>010041	12 3c					.text $12,"<"        ; token $2204
+>010043	12 3e					.text $12,">"        ; token $2205
+>010045	12 3d					.text $12,"="        ; token $2206
+>010047	13 3c 3d				.text $13,"<="       ; token $2207
+>01004a	13 3e 3d				.text $13,">="       ; token $2208
+>01004d	13 3c 3e				.text $13,"<>"       ; token $2209
+>010050	22 2b					.text $22,"+"        ; token $240a
+>010052	22 2d					.text $22,"-"        ; token $240b
+>010054	32 2a					.text $32,"*"        ; token $260c
+>010056	32 2f					.text $32,"/"        ; token $260d
+>010058	34 6d 6f 64				.text $34,"mod"      ; token $260e
+>01005c	33 3e 3e				.text $33,">>"       ; token $260f
+>01005f	33 3c 3c				.text $33,"<<"       ; token $2610
+>010062	d6 72 6e 64 28 29			.text $d6,"rnd()"    ; token $3a11
+>010068	d5 73 67 6e 28				.text $d5,"sgn("     ; token $3a12
+>01006d	d5 61 62 73 28				.text $d5,"abs("     ; token $3a13
+>010072	d5 6c 65 6e 28				.text $d5,"len("     ; token $3a14
+>010077	e2 2c					.text $e2,","        ; token $3c15
+>010079	e2 3b					.text $e2,";"        ; token $3c16
+>01007b	e2 3a					.text $e2,":"        ; token $3c17
+>01007d	e2 28					.text $e2,"("        ; token $3c18
+>01007f	e2 29					.text $e2,")"        ; token $3c19
+>010081	f4 6c 65 74				.text $f4,"let"      ; token $3e1a
+>010085	00					.byte $00
+=$2001					andTokenID                       = $2001
+=$2002					orTokenID                        = $2002
+=$2003					xorTokenID                       = $2003
+=$2204					lessTokenID                      = $2204
+=$2205					greaterTokenID                   = $2205
+=$2206					equalTokenID                     = $2206
+=$2207					lessequalTokenID                 = $2207
+=$2208					greaterequalTokenID              = $2208
+=$2209					lessgreaterTokenID               = $2209
+=$240a					plusTokenID                      = $240a
+=$240b					minusTokenID                     = $240b
+=$260c					starTokenID                      = $260c
+=$260d					slashTokenID                     = $260d
+=$260e					modTokenID                       = $260e
+=$260f					greatergreaterTokenID            = $260f
+=$2610					lesslessTokenID                  = $2610
+=$3a11					rndlparenrparenTokenID           = $3a11
+=$3a12					sgnlparenTokenID                 = $3a12
+=$3a13					abslparenTokenID                 = $3a13
+=$3a14					lenlparenTokenID                 = $3a14
+=$3c15					commaTokenID                     = $3c15
+=$3c16					semicolonTokenID                 = $3c16
+=$3c17					colonTokenID                     = $3c17
+=$3c18					lparenTokenID                    = $3c18
+=$3c19					rparenTokenID                    = $3c19
+=$3e1a					letTokenID                       = $3e1a
 
 ;******  Return to file: ..\source\basic.asm
 
 
 ;******  Processing file: ..\source\temp/block.inc
 
-=$0004					BlockFastVariables = $0004
-=$0080					BlockHashTable = $0080
+=$0004					BlockLowMemoryPtr = $0004
+=$0006					BlockHighMemoryPtr = $0006
+=$0020					BlockHashTable = $0020
+=$0020					BlockHashTableSize = $0020
 =$000f					BlockHashMask = $000f
-=$00a0					BlockLowMemoryPtr = $00a0
-=$00a2					BlockHighMemoryPtr = $00a2
 =$00c0					BlockProgranStart = $00c0
-=$7b62ce4a				BlockProtectMarker = $7b62ce4a
 
 ;******  Return to file: ..\source\basic.asm
 
@@ -142,34 +132,33 @@
 
 ;******  Return to file: ..\source\basic.asm
 
-.010092					SwitchBasicInstance:
-.010092	c2 30		rep #$30		rep 	#$30 									; 16 bit AX mode.
-.010094	29 ff 00	and #$00ff		and 	#$00FF 									; make page number 24 bit
-.010097	85 00		sta $00			sta 	DPageNumber 							; save page, base, high
-.010099	86 02		stx $02			stx		DBaseAddress
-.01009b	84 04		sty $04			sty 	DHighAddress
-.01009d	eb		xba			xba 											; put the page number (goes in the DBR) in B
-.01009e	48		pha			pha 											; then copy it into B.
-.01009f	ab		plb			plb
-.0100a0	ab		plb			plb
-.0100a1					halt1:
-.0100a1	02 00		cop #$00		cop 	#0
-.0100a3	80 fc		bra $0100a1		bra 	halt1
-.0100a5					IllegalToken:
-.0100a5	80 fe		bra $0100a5		bra 	IllegalToken
+.010086					SwitchBasicInstance:
+.010086	c2 30		rep #$30		rep 	#$30 									; 16 bit AX mode.
+.010088	29 ff 00	and #$00ff		and 	#$00FF 									; make page number 24 bit
+.01008b	85 00		sta $00			sta 	DPageNumber 							; save page, base, high
+.01008d	86 02		stx $02			stx		DBaseAddress
+.01008f	84 04		sty $04			sty 	DHighAddress
+.010091	eb		xba			xba 											; put the page number (goes in the DBR) in B
+.010092	48		pha			pha 											; then copy it into B.
+.010093	ab		plb			plb
+.010094	ab		plb			plb
+.010095					halt1:
+.010095	02 00		cop #$00		cop 	#0
+.010097	80 fc		bra $010095		bra 	halt1
+.010099					IllegalToken:
+.010099	80 fe		bra $010099		bra 	IllegalToken
 
 ;******  Return to file: ..\source\start.asm
 
 .024000					CodeSpace:
->024000	42 41 53 43 00 00 00 00			.binary "temp/basic.bin"
+>024000	42 41 53 43 e0 40 00 c0			.binary "temp/basic.bin"
 >024008	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-;	...repeated 8 times (128 bytes)...
->024098	00 00 00 00 00 00 00 00 d2 40 00 c0 00 00 00 00
->0240a8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->0240b8	00 00 00 00 00 00 00 00 0c 00 0a 80 21 20 06 44
->0240c8	04 80 00 00 00 00 ee ee ee ee 00 00 00 00 00 00
->0240d8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-;	...repeated 2033 times (32528 bytes)...
+;	...repeated 10 times (160 bytes)...
+>0240b8	00 00 00 00 00 00 00 00 0c 00 0a 80 01 40 06 22
+>0240c8	04 80 00 00 0e 00 14 80 1a 3e 01 40 06 22 2a 80
+>0240d8	00 00 00 00 ee ee ee ee 00 00 00 00 00 00 00 00
+>0240e8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+;	...repeated 2032 times (32512 bytes)...
 >02bff8	00 00 00 00 00 00 00 00
 .02c000					CodeEndSpace:
 

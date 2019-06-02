@@ -3,7 +3,7 @@
 #
 #		Name : 		gentokens.py
 #		Purpose :	Creates tokens files.
-#		Date :		29th May 2018
+#		Date :		2nd July 2019
 #		Author : 	Paul Robson (paul@robsons.org.uk)
 #
 # *******************************************************************************************
@@ -16,13 +16,15 @@ import re,os,sys
 # *******************************************************************************************
 
 class Token(object):
-	def __init__(self,token,type,id):
+	def __init__(self,token,ttype,id):
+		assert ttype >= 0 and ttype < 16
+		assert id >= 0 and id < 512
 		self.name = token.strip().lower()
-		self.type = type
-		self.id = id + (type << 10) + 0x4000
+		self.type = ttype
+		self.id = id + (ttype << 9) + 0x2000
 		self.vector = "IllegalToken"
 		assert self.name != "" and len(self.name) < 15,"Name "+self.name
-		assert (type >= 0 and type <= 7) or (type >= 13 and type <= 15)
+		assert (ttype >= 0 and ttype <= 7) or (ttype >= 13 and ttype <= 15)
 	def setRoutine(self,routine):
 		self.vector = routine
 
@@ -84,7 +86,7 @@ class TokenList(object):
 		h.write("TokenText:\n")
 		for t in self.getList():
 			b = (len(t.name)+1)+t.type * 16
-			h.write('\t .text ${0:02x},{1:10} ; token ${2:04x}\n'.format(b,'"'+t.name+'"',t.id))
+			h.write('\t.text ${0:02x},{1:10} ; token ${2:04x}\n'.format(b,'"'+t.name+'"',t.id))
 		h.write("\t.byte $00\n\n")			
 		#
 		h.write(";\n;\tConstants\n;\n")
@@ -122,4 +124,4 @@ if __name__ == "__main__":
 		tokens = TokenList()
 		tokens.scanSource("../source")
 		tokens.renderInclude("temp/")
-
+		

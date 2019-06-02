@@ -1,7 +1,6 @@
-BlockFastVariables = $0004
-BlockHashTable = $0080
+BlockLowMemoryPtr = $0004
+BlockHighMemoryPtr = $0006
+BlockHashTable = $0020
+BlockHashTableSize = $0020
 BlockHashMask = $000f
-BlockLowMemoryPtr = $00a0
-BlockHighMemoryPtr = $00a2
 BlockProgranStart = $00c0
-BlockProtectMarker = $7b62ce4a

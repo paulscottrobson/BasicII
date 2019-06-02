@@ -17,12 +17,9 @@
 	*		/		mod							## multiply and divide, modulus, signed
 	>> 		<< 									## logical shift left and right, zeros shifted in
 
-[4]
-	?		! 		$ 							## Indirection operators
-
 [unary]
 	rnd() 										## random number 32 bit							
-	sgn( 	abs( 	len(	 					## standard
+	sgn( 	abs( 	len(	 					## standard functions.
 	
 [syntax]
 	, 	;	:	(	)
@@ -30,6 +27,3 @@
 [keyword]										
 	let  										## assignment	
 
-##
-##	Keywords to do :
-##
