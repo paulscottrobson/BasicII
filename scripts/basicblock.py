@@ -20,7 +20,7 @@ from tokeniser import *
 # *******************************************************************************************
 
 class BasicBlock(object):
-	def __init__(self,baseAddress = 0x0000,size = 0xFFFF,debug = True):
+	def __init__(self,baseAddress = 0x0000,size = 0xFFFF,debug = False):
 		self.baseAddress = baseAddress											# Block information
 		self.blockSize = size
 		self.endAddress = baseAddress + size
@@ -35,6 +35,13 @@ class BasicBlock(object):
 		self.variables = {}														# variable info
 		self.isProtected = True
 		self.lastProgramLineNumber = 0
+	#
+	#	Write binary out
+	#
+	def export(self,fileName):
+		h = open(fileName,"wb")
+		h.write(bytes(self.data))
+		h.close()
 	#
 	#	Set Protection
 	#
@@ -258,11 +265,11 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
 	blk.addBASICLine(10,"a=4")
-	blk.addBASICLine(20,"!a=42")
-	blk.setFastVariable("d",-7)
-	blk.setFastVariable("@",999999)
-	blk.createVariable("tim23",42)
-	blk.createVariable("abc",1025,12)
+	#blk.addBASICLine(20,"!a=42")
+	#blk.setFastVariable("d",-7)
+	#blk.setFastVariable("@",999999)
+	#blk.createVariable("tim23",42)
+	#blk.createVariable("abc",1025,12)
+	blk.export("temp/basic.bin")	
 	blk.exportConstants("temp/block.inc")
-	blk.listVariables()
-	
+	#blk.listVariables()

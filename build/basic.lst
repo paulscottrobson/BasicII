@@ -1,0 +1,176 @@
+
+; 64tass Turbo Assembler Macro V1.54.1900 listing file
+; 64tass --m65816 -f -q -o basic.bin -L basic.lst ..\source\start.asm
+; Sun Jun 02 16:09:46 2019
+
+;Offset	;Hex		;Monitor	;Source
+
+;******  Processing input file: ..\source\start.asm
+
+.0000	18		clc			clc												; switch into 65816 16 bit mode.
+.0001	fb		xce			xce
+.0002	c2 30		rep #$30		rep 	#$30
+.0004	a2 e0 ff	ldx #$ffe0		ldx 	#$FFE0 									; 6502 stack at $FFE0
+.0007	9a		txs			txs
+.0008	a9 00 fe	lda #$fe00		lda 	#$FE00 									; set DP to $FE00
+.000b	5b		tcd			tcd
+.000c	a9 02 00	lda #$0002		lda 	#CodeSpace >> 16 						; put the page number in A ($2)
+.000f	a2 00 40	ldx #$4000		ldx 	#CodeSpace & $FFFF 						; and the base address in X ($4000)
+.0012	a0 00 c0	ldy #$c000		ldy 	#CodeEndSpace & $FFFF					; and the end address in Y ($C000)
+.0015	5c 92 00 01	jmp $010092		jmp 	SwitchBasicInstance
+
+;******  Processing file: ..\source\basic.asm
+
+.010000					StartOfBasicCode:
+
+;******  Processing file: ..\source\temp/tokens.inc
+
+.010000					CommandJumpTable:
+>010000	a5 00					.word IllegalToken & $FFFF ; for the $0000 token.
+>010002	a5 00					.word IllegalToken             & $FFFF ; token $4001 "and"
+>010004	a5 00					.word IllegalToken             & $FFFF ; token $4002 "or"
+>010006	a5 00					.word IllegalToken             & $FFFF ; token $4003 "xor"
+>010008	a5 00					.word IllegalToken             & $FFFF ; token $4404 "<"
+>01000a	a5 00					.word IllegalToken             & $FFFF ; token $4405 ">"
+>01000c	a5 00					.word IllegalToken             & $FFFF ; token $4406 "="
+>01000e	a5 00					.word IllegalToken             & $FFFF ; token $4407 "<="
+>010010	a5 00					.word IllegalToken             & $FFFF ; token $4408 ">="
+>010012	a5 00					.word IllegalToken             & $FFFF ; token $4409 "<>"
+>010014	a5 00					.word IllegalToken             & $FFFF ; token $480a "+"
+>010016	a5 00					.word IllegalToken             & $FFFF ; token $480b "-"
+>010018	a5 00					.word IllegalToken             & $FFFF ; token $4c0c "*"
+>01001a	a5 00					.word IllegalToken             & $FFFF ; token $4c0d "/"
+>01001c	a5 00					.word IllegalToken             & $FFFF ; token $4c0e "mod"
+>01001e	a5 00					.word IllegalToken             & $FFFF ; token $4c0f ">>"
+>010020	a5 00					.word IllegalToken             & $FFFF ; token $4c10 "<<"
+>010022	a5 00					.word IllegalToken             & $FFFF ; token $5011 "?"
+>010024	a5 00					.word IllegalToken             & $FFFF ; token $5012 "!"
+>010026	a5 00					.word IllegalToken             & $FFFF ; token $5013 "$"
+>010028	a5 00					.word IllegalToken             & $FFFF ; token $7414 "rnd()"
+>01002a	a5 00					.word IllegalToken             & $FFFF ; token $7415 "sgn("
+>01002c	a5 00					.word IllegalToken             & $FFFF ; token $7416 "abs("
+>01002e	a5 00					.word IllegalToken             & $FFFF ; token $7417 "len("
+>010030	a5 00					.word IllegalToken             & $FFFF ; token $7818 ","
+>010032	a5 00					.word IllegalToken             & $FFFF ; token $7819 ";"
+>010034	a5 00					.word IllegalToken             & $FFFF ; token $781a ":"
+>010036	a5 00					.word IllegalToken             & $FFFF ; token $781b "("
+>010038	a5 00					.word IllegalToken             & $FFFF ; token $781c ")"
+>01003a	a5 00					.word IllegalToken             & $FFFF ; token $7c1d "let"
+.01003c					TokenText:
+>01003c	04 61 6e 64				 .text $04,"and"      ; token $4001
+>010040	03 6f 72				 .text $03,"or"       ; token $4002
+>010043	04 78 6f 72				 .text $04,"xor"      ; token $4003
+>010047	12 3c					 .text $12,"<"        ; token $4404
+>010049	12 3e					 .text $12,">"        ; token $4405
+>01004b	12 3d					 .text $12,"="        ; token $4406
+>01004d	13 3c 3d				 .text $13,"<="       ; token $4407
+>010050	13 3e 3d				 .text $13,">="       ; token $4408
+>010053	13 3c 3e				 .text $13,"<>"       ; token $4409
+>010056	22 2b					 .text $22,"+"        ; token $480a
+>010058	22 2d					 .text $22,"-"        ; token $480b
+>01005a	32 2a					 .text $32,"*"        ; token $4c0c
+>01005c	32 2f					 .text $32,"/"        ; token $4c0d
+>01005e	34 6d 6f 64				 .text $34,"mod"      ; token $4c0e
+>010062	33 3e 3e				 .text $33,">>"       ; token $4c0f
+>010065	33 3c 3c				 .text $33,"<<"       ; token $4c10
+>010068	42 3f					 .text $42,"?"        ; token $5011
+>01006a	42 21					 .text $42,"!"        ; token $5012
+>01006c	42 24					 .text $42,"$"        ; token $5013
+>01006e	d6 72 6e 64 28 29			 .text $d6,"rnd()"    ; token $7414
+>010074	d5 73 67 6e 28				 .text $d5,"sgn("     ; token $7415
+>010079	d5 61 62 73 28				 .text $d5,"abs("     ; token $7416
+>01007e	d5 6c 65 6e 28				 .text $d5,"len("     ; token $7417
+>010083	e2 2c					 .text $e2,","        ; token $7818
+>010085	e2 3b					 .text $e2,";"        ; token $7819
+>010087	e2 3a					 .text $e2,":"        ; token $781a
+>010089	e2 28					 .text $e2,"("        ; token $781b
+>01008b	e2 29					 .text $e2,")"        ; token $781c
+>01008d	f4 6c 65 74				 .text $f4,"let"      ; token $7c1d
+>010091	00					.byte $00
+=$4001					andTokenID                       = $4001
+=$4002					orTokenID                        = $4002
+=$4003					xorTokenID                       = $4003
+=$4404					lessTokenID                      = $4404
+=$4405					greaterTokenID                   = $4405
+=$4406					equalTokenID                     = $4406
+=$4407					lessequalTokenID                 = $4407
+=$4408					greaterequalTokenID              = $4408
+=$4409					lessgreaterTokenID               = $4409
+=$480a					plusTokenID                      = $480a
+=$480b					minusTokenID                     = $480b
+=$4c0c					starTokenID                      = $4c0c
+=$4c0d					slashTokenID                     = $4c0d
+=$4c0e					modTokenID                       = $4c0e
+=$4c0f					greatergreaterTokenID            = $4c0f
+=$4c10					lesslessTokenID                  = $4c10
+=$5011					questionTokenID                  = $5011
+=$5012					plingTokenID                     = $5012
+=$5013					dollarTokenID                    = $5013
+=$7414					rndlparenrparenTokenID           = $7414
+=$7415					sgnlparenTokenID                 = $7415
+=$7416					abslparenTokenID                 = $7416
+=$7417					lenlparenTokenID                 = $7417
+=$7818					commaTokenID                     = $7818
+=$7819					semicolonTokenID                 = $7819
+=$781a					colonTokenID                     = $781a
+=$781b					lparenTokenID                    = $781b
+=$781c					rparenTokenID                    = $781c
+=$7c1d					letTokenID                       = $7c1d
+
+;******  Return to file: ..\source\basic.asm
+
+
+;******  Processing file: ..\source\temp/block.inc
+
+=$0004					BlockFastVariables = $0004
+=$0080					BlockHashTable = $0080
+=$000f					BlockHashMask = $000f
+=$00a0					BlockLowMemoryPtr = $00a0
+=$00a2					BlockHighMemoryPtr = $00a2
+=$00c0					BlockProgranStart = $00c0
+=$7b62ce4a				BlockProtectMarker = $7b62ce4a
+
+;******  Return to file: ..\source\basic.asm
+
+
+;******  Processing file: ..\source\data.asm
+
+=$00					DPBaseAddress = $00 						; Base address used for direct page.
+=$00					DPageNumber = DPBaseAddress 				; page number of workspace area
+=2					DBaseAddress = DPBaseAddress+2 				; low memory for workspace area
+=4					DHighAddress = DPBaseAddress+4 				; high memory for workspace area
+
+;******  Return to file: ..\source\basic.asm
+
+.010092					SwitchBasicInstance:
+.010092	c2 30		rep #$30		rep 	#$30 									; 16 bit AX mode.
+.010094	29 ff 00	and #$00ff		and 	#$00FF 									; make page number 24 bit
+.010097	85 00		sta $00			sta 	DPageNumber 							; save page, base, high
+.010099	86 02		stx $02			stx		DBaseAddress
+.01009b	84 04		sty $04			sty 	DHighAddress
+.01009d	eb		xba			xba 											; put the page number (goes in the DBR) in B
+.01009e	48		pha			pha 											; then copy it into B.
+.01009f	ab		plb			plb
+.0100a0	ab		plb			plb
+.0100a1					halt1:
+.0100a1	02 00		cop #$00		cop 	#0
+.0100a3	80 fc		bra $0100a1		bra 	halt1
+.0100a5					IllegalToken:
+.0100a5	80 fe		bra $0100a5		bra 	IllegalToken
+
+;******  Return to file: ..\source\start.asm
+
+.024000					CodeSpace:
+>024000	42 41 53 43 00 00 00 00			.binary "temp/basic.bin"
+>024008	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+;	...repeated 8 times (128 bytes)...
+>024098	00 00 00 00 00 00 00 00 d2 40 00 c0 00 00 00 00
+>0240a8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>0240b8	00 00 00 00 00 00 00 00 0c 00 0a 80 21 20 06 44
+>0240c8	04 80 00 00 00 00 ee ee ee ee 00 00 00 00 00 00
+>0240d8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+;	...repeated 2033 times (32528 bytes)...
+>02bff8	00 00 00 00 00 00 00 00
+.02c000					CodeEndSpace:
+
+;******  End of listing
