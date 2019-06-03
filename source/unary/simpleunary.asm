@@ -11,6 +11,24 @@
 
 ; *******************************************************************************************
 ;
+;									len s => length
+;
+; *******************************************************************************************
+
+Function_Len: ;; len(
+		jsr 	ResetTypeInteger 			; returns an integer
+		jsr 	EvaluateNextString 			; get the value you are absoluting
+		lda 	#RParenTokenID 				; check )
+		jsr 	CheckNextToken
+		ldy 	EXSValueL+2,x 				; address of string.
+		lda 	$0000,y 					; get the string length
+		and 	#$00FF 						; as a byte
+		sta 	EXSValueL+0,x 				; and return it
+		stz 	EXSValueH+0,x 			
+		rts
+
+; *******************************************************************************************
+;
 ;									abs s => absolute value
 ;
 ; *******************************************************************************************
@@ -76,9 +94,9 @@ Function_Random: ;; rnd()
 		lda 	DRandom 					; check for non-zero 
 		ora 	DRandom+2 					; they don't like these :)
 		bne 	_Rnd_NotZero
-		lda 	#$37 						; initialise it to the same value. 
+		lda 	#$B5 						; initialise it to the same value. 
 		sta 	DRandom 
-		lda 	#$E2
+		lda 	#$EA
 		sta 	DRandom+2
 _Rnd_NotZero:
 		jsr 	_Rnd_Process 				; call randomiser twice

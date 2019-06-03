@@ -22,7 +22,7 @@ CommandJumpTable:
 	.word Function_Random          & $FFFF ; token $3a11 "rnd()"
 	.word Function_Sgn             & $FFFF ; token $3a12 "sgn("
 	.word Function_Abs             & $FFFF ; token $3a13 "abs("
-	.word IllegalToken             & $FFFF ; token $3a14 "len("
+	.word Function_Len             & $FFFF ; token $3a14 "len("
 	.word IllegalToken             & $FFFF ; token $3c15 ","
 	.word IllegalToken             & $FFFF ; token $3c16 ";"
 	.word IllegalToken             & $FFFF ; token $3c17 ":"
