@@ -1,7 +1,7 @@
 TODO:-
 	LEN(<string>) function
 	String Concatenation / Temp string routines.
-	Variables
+	Variables.
 
 Outstanding:
 	Expand Expression stack

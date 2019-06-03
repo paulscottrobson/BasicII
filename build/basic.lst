@@ -1,11 +1,11 @@
 
-; 64tass Turbo Assembler Macro V1.54.1900 listing file
-; 64tass --m65816 -f -q -o basic.bin -L basic.lst ..\source\start.asm
-; Mon Jun 03 09:52:17 2019
+; 64tass Turbo Assembler Macro V1.53.1515? listing file
+; tass64 --m65816 -f -q -o basic.bin -L basic.lst ../source/start.asm
+; Mon Jun  3 21:35:11 2019
 
 ;Offset	;Hex		;Monitor	;Source
 
-;******  Processing input file: ..\source\start.asm
+;******  Processing input file: ../source/start.asm
 
 .0000	18		clc			clc												; switch into 65816 16 bit mode.
 .0001	fb		xce			xce
@@ -19,11 +19,11 @@
 .0012	a0 00 c0	ldy #$c000		ldy 	#CodeEndSpace & $FFFF					; and the end address in Y ($C000)
 .0015	5c 10 05 01	jmp $010510		jmp 	SwitchBasicInstance
 
-;******  Processing file: ..\source\basic.asm
+;******  Processing file: ../source/basic.asm
 
 .010000					StartOfBasicCode:
 
-;******  Processing file: ..\source\temp/tokens.inc
+;******  Processing file: ../source/temp/tokens.inc
 
 .010000					CommandJumpTable:
 >010000	2f 05					.word IllegalToken & $FFFF ; for the $0000 token.
@@ -108,10 +108,10 @@
 =$3c19					rparenTokenID                    = $3c19
 =$3e1a					letTokenID                       = $3e1a
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\temp/block.inc
+;******  Processing file: ../source/temp/block.inc
 
 =$0004					BlockFastVariables = $0004
 =$0070					BlockLowMemoryPtr = $0070
@@ -121,10 +121,10 @@
 =$000f					BlockHashMask = $000f
 =$0100					BlockProgranStart = $0100
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\data.asm
+;******  Processing file: ../source/data.asm
 
 =$00					DPBaseAddress = $00 						; Base address used for direct page.
 =$00					DPageNumber = DPBaseAddress 				; page number of workspace area
@@ -142,17 +142,17 @@
 =16					EXSValueH = 16  							; High word
 =32					EXSPrecType = 32							; Type (bit 15, string = 1), rest are precedence bits.
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\expression.asm
+;******  Processing file: ../source/expression.asm
 
 .010086					EvaluateReset:
-.010086	a0 72 00	ldy #$0072			ldy 	#BlockHighMemoryPtr 		; reset temp store pointer
+.010086	a0 72 00	ldy #$0072			ldy 	#BlockHighMemoryPtr 		; reset temp store pointer, start at high memory.
 .010089	b1 02		lda ($02),y			lda 	(DBaseAddress),y
-.01008b	38		sec				sec 								; allocate 256 bytes
-.01008c	e9 00 01	sbc #$0100			sbc 	#256
-.01008f	85 12		sta $12				sta 	DTempStringPtr 				; store as temporary string pointer.
+.01008b	38		sec				sec 								; allocate 256 bytes down. This gives clear space to
+.01008c	e9 00 01	sbc #$0100			sbc 	#256 						; 'concrete' a string later on.
+.01008f	85 12		sta $12				sta 	DTempStringPtr 				; store as temporary string pointer start address.
 .010091	60		rts				rts
 .010092					Evaluate:
 .010092	a2 00 01	ldx #$0100			ldx 	#EXSBase					; reset the stack base
@@ -336,10 +336,10 @@
 .0101f4	90 e8		bcc $0101de			bcc 	ESType
 .0101f6	60		rts				rts
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\binary/arithmetic.asm
+;******  Processing file: ../source/binary/arithmetic.asm
 
 .0101f7					Binary_Add:
 .0101f7	b5 20		lda $20,x		lda 	EXSPrecType+0,x 					; check both same type
@@ -405,10 +405,10 @@
 .01027d					_Binary_SLExit:
 .01027d	60		rts			rts
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\binary/bitwise.asm
+;******  Processing file: ../source/binary/bitwise.asm
 
 .01027e					Binary_And:
 .01027e	20 85 01	jsr $010185		jsr 	CheckBothNumeric 					; check both values are numeric
@@ -438,10 +438,10 @@
 .0102ab	95 10		sta $10,x		sta 	EXSValueH+0,x
 .0102ad	60		rts			rts
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\binary/comparison.asm
+;******  Processing file: ../source/binary/comparison.asm
 
 .0102ae					Binary_Equals:
 .0102ae	20 67 03	jsr $010367		jsr 	CompareTypeCheck 				; which types are we comparing ?
@@ -599,10 +599,10 @@
 .0103d6	38		sec			sec 									; return with CS indicating string comparison.
 .0103d7	60		rts			rts
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\binary/divide.asm
+;******  Processing file: ../source/binary/divide.asm
 
 .0103d8					Binary_Divide:
 .0103d8	20 85 01	jsr $010185		jsr 	CheckBothNumeric 					; check both values are numeric
@@ -675,10 +675,10 @@
 .010458	95 10		sta $10,x		sta 	EXSValueH+0,x
 .01045a	60		rts			rts
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\binary/multiply.asm
+;******  Processing file: ../source/binary/multiply.asm
 
 .01045b					Binary_Multiply:
 .01045b	20 85 01	jsr $010185		jsr 	CheckBothNumeric 					; check both values are numeric
@@ -711,10 +711,10 @@
 .01048e					_BinaryMultiply_Exit:
 .01048e	60		rts			rts
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 
-;******  Processing file: ..\source\unary/simpleunary.asm
+;******  Processing file: ../source/unary/simpleunary.asm
 
 .01048f					Function_Abs:
 .01048f	20 a6 01	jsr $0101a6			jsr 	ResetTypeInteger 			; returns an integer
@@ -785,7 +785,7 @@
 .01050d	45 18		eor $18				eor 	DRandom+2
 .01050f	60		rts				rts
 
-;******  Return to file: ..\source\basic.asm
+;******  Return to file: ../source/basic.asm
 
 .010510					SwitchBasicInstance:
 .010510	c2 30		rep #$30		rep 	#$30 									; 16 bit AX mode.
@@ -828,7 +828,7 @@
 >01055d	4d 69 73 73 69 6e 67 20			.text	"Missing ~",0
 >010565	7e 00
 
-;******  Return to file: ..\source\start.asm
+;******  Return to file: ../source/start.asm
 
 .024000					CodeSpace:
 >024000	42 41 53 43 00 00 00 00			.binary "temp/basic.bin"
