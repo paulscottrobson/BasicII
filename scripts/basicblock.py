@@ -160,7 +160,7 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'a=-4+5')
+	blk.addBASICLine(10,'a=rnd()')
 	blk.addBASICLine(20,"let a=42")
 	blk.export("temp/basic.bin")	
 	blk.exportConstants("temp/block.inc")

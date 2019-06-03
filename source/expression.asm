@@ -11,6 +11,44 @@
 
 ; *******************************************************************************************
 ;
+;		Pre-evaluate preparation. Called once per *command* at the start, this resets
+;		the temporary string pointer. Strings are only "firmed up" when they are assigned
+;		to a string variable or array element.
+;
+;		So G/C should be reduced because intermediate strings generated in expression
+;		evaluation are not maintained, only those that lead to final assignment to something.
+;
+;		Any m/c routines that use a string should be aware of this. Strings that are not in
+;		variables only exist in the lines where they are created.
+;
+; *******************************************************************************************
+
+EvaluateReset:
+		ldy 	#BlockHighMemoryPtr 		; reset temp store pointer, start at high memory.
+		lda 	(DBaseAddress),y
+		sec 								; allocate 256 bytes down. This gives clear space to
+		sbc 	#256 						; 'concrete' a string later on.
+		sta 	DTempStringPtr 				; store as temporary string pointer start address.
+		rts
+
+; *******************************************************************************************
+;
+;										Base Evaluate.
+;
+;		Evaluate expression at (DCodePtr), returning value in YA, type in CS (1 = string)
+;		This (and evaluatestring and evaluateinteger) are used when called from a keyword
+;
+;		When calling from a non-base, e.g. inside a unary function, use EvaluateNext(X)
+;		functions.
+;
+; *******************************************************************************************
+
+Evaluate:
+		ldx 	#EXSBase					; reset the stack base
+		lda 	#0<<9 						; current precedence level.
+											; fall through.
+; *******************************************************************************************
+;
 ;		Evaluate a term/operator sequence at the current precedence level. A contains the
 ;		precedence level shifted 9 left (matching the keyword position). X contains the 
 ;		expression stack offset.
@@ -81,7 +119,7 @@ _ELConstant:
 _ELGotAtom:
 		lda 	(DCodePtr)						; get the next token.
 		tay 									; save in Y, temporarily.
-		and 	#$E000 							; is it a keyword, 001x xxxx xxxx xxxx
+		and 	#$F000 							; is it a binary operator keyword, 001x xxxx xxxx xxxx
 		cmp 	#$2000
 		bne 	_ELExit 						; no, exit.
 
@@ -104,8 +142,11 @@ _ELGotAtom:
 		jsr 	EvaluateLevel 
 		dex
 		dex
-
 		pla 									; get operator back
+;
+;		Call the keyword in A
+;		
+_ELExecuteA:		
 		and 	#$01FF 							; keyword ID.
 		asl 	a 								; double it as keyword vector table is word data
 		txy 									; save X in Y
@@ -129,15 +170,52 @@ _ELExit:
 ;		Code to handle non-constant atoms : - ( and Unary Functions 001xx and Identifiers 01xx
 ;
 _ELKeywordFunction:
-		inc 	DCodePtr 						; skip over the token/function/identifier
-		inc 	DCodePtr
-		cmp 	#minusTokenID
+		cmp 	#$4000 							; identifier (e.g. variable) if in range $4000-$7FFF
+		bcs 	_ELVariable 					; (we've already discounted 8000-FFFF)
+		cmp 	#minusTokenID 					; special case keywords -(atom) (expression)
 		beq 	_ELMinusAtom
-		bra 	_ELKeywordFunction
+		cmp 	#lparenTokenID
+		beq 	_ELParenthesis
+		tay 									; save token in Y
+		and 	#$FE00 							; look for 0011 101x ? i.e. a unary function.
+		cmp 	#$3A00 							; if it isn't then exit
+		bne 	_ELExit
+;
+;		Handle Unary Function
+;
+_ELUnaryFunction:
+		inc 	DCodePtr 						; skip over the unary function token
+		inc 	DCodePtr
+		tya 									; get token back
+		bra 	_ELExecuteA 					; and execute it.
+;
+;		Handle variable (sequence of identifier tokens)
+;
+_ELVariable:
+		nop
+		nop
+		nop
+		bra 	_ELGotAtom
+;
+;		Handle (Parenthesis)
+;
+_ELParenthesis:
+		inc 	DCodePtr 						; skip over the ( token
+		inc 	DCodePtr
+		jsr 	EvaluateNext 					; calculate the value in parenthesis, using next space on the stack.
+		lda 	#rparenTokenID 					; check for ) which should close the parenthesised expression.
+		jsr 	CheckNextToken		
+		lda 	EXSValueL+2,x 					; copy the value in directly from level 2 to level 0.
+		sta 	EXSValueL+0,x
+		lda 	EXSValueH+2,x
+		sta 	EXSValueH+0,x
+		brl 	_ELGotAtom 						; and go round looking for the next binary operator
 ;
 ;		Handle -<atom>
 ;
 _ELMinusAtom:
+		inc 	DCodePtr 						; skip over the - token
+		inc 	DCodePtr
 		inx 									; make space
 		inx
 		lda 	#8<<9 							; means binary operation will be impossible.
@@ -151,7 +229,8 @@ _ELMinusAtom:
 		lda 	#0
 		sbc 	EXSValueH+2,x
 		sta 	EXSValueH+0,x
-		bra 	_ELGotAtom
+		jmp 	_ELGotAtom
+
 
 ; *******************************************************************************************
 ;
@@ -159,7 +238,7 @@ _ELMinusAtom:
 ;
 ; *******************************************************************************************
 
-CheckNumeric:
+CheckBothNumeric:
 		lda 	EXSPrecType+0,x 				; check bit 15 of both types are zero
 		ora 	EXSPrecType+2,x
 		bmi 	_CNError
@@ -180,3 +259,54 @@ ResetTypeInteger:
 		sta 	EXSPrecType+0,x
 		rts
 		
+
+; *******************************************************************************************
+;
+;		Calculate a result at the next stack level. This is used when expression evaluation
+;		is required within expression evaluation, e.g. unary functions, parenthesis, negation
+;		and so on. The value is in YA, or ESXValue?+2,x
+;
+; *******************************************************************************************
+
+EvaluateNext:
+		inx 									; stack forward
+		inx
+		lda 	#0<<9 							; lowest precedence.
+		jsr 	EvaluateLevel 					; do at next level
+		dex 									; reset stack
+		dex
+		rts
+
+; *******************************************************************************************
+;
+;					Evaluate and check result is integer or string
+;
+;		  Four of these, one for each type, one for inline function/main function
+;
+; *******************************************************************************************
+
+EvaluateInteger:
+		jsr 	Evaluate
+		bcs 	EIType
+		rts
+EIType:		
+		jsr 	ReportError
+		.text 	"Number expected",$00
+
+EvaluateNextInteger:
+		jsr 	EvaluateNext
+		bcs 	EIType
+		rts
+
+EvaluateString:
+		jsr 	Evaluate
+		bcc 	ESType
+		rts
+ESType:		
+		jsr 	ReportError
+		.text 	"String expected",$00
+
+EvaluateNextString:
+		jsr 	EvaluateNext
+		bcc 	ESType
+		rts

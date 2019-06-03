@@ -54,7 +54,7 @@ _BAConcatenateString:
 ; *******************************************************************************************
 
 Binary_Subtract: ;; - 
-	jsr 	CheckNumeric 						; check both values are numeric
+	jsr 	CheckBothNumeric 					; check both values are numeric
 	sec
 	lda		EXSValueL+0,x
 	sbc 	EXSValueL+2,x
@@ -71,7 +71,7 @@ Binary_Subtract: ;; -
 ; *******************************************************************************************
 
 Binary_ShiftRight: ;; >>
-	jsr 	CheckNumeric 						; check both values are numeric
+	jsr 	CheckBothNumeric 					; check both values are numeric
 	lda 	EXSValueL+2,x
 	and 	#63
 	beq		_Binary_SRExit
@@ -90,7 +90,7 @@ _Binary_SRExit:
 ; *******************************************************************************************
 
 Binary_ShiftLeft: ;; << 
-	jsr 	CheckNumeric 						; check both values are numeric
+	jsr 	CheckBothNumeric 					; check both values are numeric
 	lda 	EXSValueL+2,x
 	and 	#63
 	beq		_Binary_SLExit

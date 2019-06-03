@@ -17,7 +17,7 @@
 ; *******************************************************************************************
 
 Binary_Divide: ;; / 
-	jsr 	CheckNumeric 						; check both values are numeric
+	jsr 	CheckBothNumeric 					; check both values are numeric
 	lda 	EXSValueL+2,x						; check for division by zero
 	ora	 	EXSValueH+2,x
 	bne 	_BinaryDivide_Ok

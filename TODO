@@ -1,7 +1,6 @@
 TODO:-
-	Parenthesis
-	Unary Functions
-	String Concatenation
+	LEN(<string>) function
+	String Concatenation / Temp string routines.
 	Variables
 
 Outstanding:

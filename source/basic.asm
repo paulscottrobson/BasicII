@@ -20,6 +20,7 @@ StartOfBasicCode:
 	.include "binary/comparison.asm"
 	.include "binary/divide.asm"
 	.include "binary/multiply.asm"
+	.include "unary/simpleunary.asm"				; unary arithmetic/string operators.
 
 ; *******************************************************************************************
 ;
@@ -45,18 +46,11 @@ SwitchBasicInstance:
 	plb
 	plb 
 
-	ldy 	#BlockHighMemoryPtr 					; reset temp store pointer
-	lda 	(DBaseAddress),y
-	sec 											; allocate 256 bytes
-	sbc 	#256
-	sta 	DTempStringPtr 							; store as temporary string pointer.
-
+	jsr 	EvaluateReset
+	
 	lda 	#$4100+8 								; initialise Code Pointer
 	sta 	DCodePtr 
-	ldx 	#EXSBase
-	lda 	#0<<9 									; current precedence level.
-	nop
-	jsr 	EvaluateLevel 							; evaluate it.
+	jsr 	Evaluate 								; evaluate it.
 	nop
 halt1:
 	cop 	#0
@@ -72,3 +66,14 @@ SyntaxError:
 ReportError:
 	nop
 	bra 	ReportError
+
+CheckNextToken:
+	cmp 	(DCodePtr)
+	bne 	_CTKError
+	inc 	DCodePtr
+	inc 	DCodePtr
+	rts	
+_CTKError:
+	sta 	DTemp1
+	jsr 	ReportError
+	.text	"Missing ~",0

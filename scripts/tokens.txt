@@ -27,3 +27,8 @@
 [keyword]										
 	let  										## assignment	
 
+##
+##	Unimplemented (that are listed)
+##
+##	let 	len(
+##

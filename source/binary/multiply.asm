@@ -16,7 +16,7 @@
 ; *******************************************************************************************
 
 Binary_Multiply: ;; * 
-	jsr 	CheckNumeric 						; check both values are numeric
+	jsr 	CheckBothNumeric 					; check both values are numeric
 	lda 	EXSValueL+0,x 						; multiplier to DTemp1, multiplicand in Value+2
 	sta 	DTemp1
 	lda 	EXSValueH+0,x
