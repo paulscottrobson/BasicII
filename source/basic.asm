@@ -45,19 +45,19 @@ SwitchBasicInstance:
 	plb
 	plb 
 
-	nop
-
 	ldy 	#BlockHighMemoryPtr 					; reset temp store pointer
 	lda 	(DBaseAddress),y
 	sec 											; allocate 256 bytes
 	sbc 	#256
 	sta 	DTempStringPtr 							; store as temporary string pointer.
 
-	lda 	#$40C0+8 								; initialise Code Pointer
+	lda 	#$4100+8 								; initialise Code Pointer
 	sta 	DCodePtr 
 	ldx 	#EXSBase
 	lda 	#0<<9 									; current precedence level.
-
+	nop
+	jsr 	EvaluateLevel 							; evaluate it.
+	nop
 halt1:
 	cop 	#0
 	bra 	halt1

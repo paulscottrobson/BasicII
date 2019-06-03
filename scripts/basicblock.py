@@ -137,6 +137,7 @@ class BasicBlock(object):
 	#
 	def exportConstants(self,fileName):
 		self.handle = open(fileName.replace("/",os.sep),"w")
+		self._export("BlockFastVariables",BasicBlock.FASTVARIABLES)
 		self._export("BlockLowMemoryPtr",BasicBlock.LOWPTR)
 		self._export("BlockHighMemoryPtr",BasicBlock.HIGHPTR)
 		self._export("BlockHashTable",BasicBlock.HASHTABLE)
@@ -150,16 +151,16 @@ class BasicBlock(object):
 
 BasicBlock.ID = "BASC"															# ID
 BasicBlock.FASTVARIABLES = 0x04 												# Fast Variable Base
-BasicBlock.LOWPTR = 0x04 														# Low Memory Allocation
-BasicBlock.HIGHPTR = 0x06 														# High Memory Allocation
-BasicBlock.PROGRAM = 0xC0 														# First line of program
-BasicBlock.HASHTABLE = 0x20 													# Hash Table Base
+BasicBlock.LOWPTR = 0x70 														# Low Memory Allocation
+BasicBlock.HIGHPTR = 0x72 														# High Memory Allocation
+BasicBlock.PROGRAM = 0x100 														# First line of program
+BasicBlock.HASHTABLE = 0x80 													# Hash Table Base
 BasicBlock.HASHTABLESIZE = 0x20 												# Bytes for each hash table
 BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,"a=4")
+	blk.addBASICLine(10,'a=-4+5')
 	blk.addBASICLine(20,"let a=42")
 	blk.export("temp/basic.bin")	
 	blk.exportConstants("temp/block.inc")

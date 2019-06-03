@@ -117,3 +117,4 @@ if __name__ == "__main__":
 	tk.tokeniseDebug('a$: 0')
 	tk.tokeniseDebug('c(:) 0')
 	tk.tokeniseDebug('zzzz$(: 0')
+	tk.tokeniseDebug('z')
