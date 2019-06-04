@@ -85,8 +85,9 @@ _FVCompare:
 		adc 	DCodePtr
 		sta 	DCodePtr		
 		;
+		;		Check for array, by looking at the first token.
+		;
 		pla 								; restore first token
-		nop
 		and 	#$0800 						; is it an array.
 		bne 	_FVIndexed 					; if so, need to calculate and apply the index.
 		;
@@ -101,6 +102,30 @@ _FVCompare:
 _FVFail:									; didn't find the right one, so return with CS.								
 		sec
 		rts
-
+		;
+		;		Handle Arrays
+		;
 _FVIndexed:
-		bra 	_FVIndexed
+		lda 	DTemp1 						; address of the array record
+		pha 								; save on stack
+		jsr 	EvaluateNextInteger 		; this is the index.
+		cpy 	#0 							; fail if upper word non zero.
+		bne 	_FVIndexFail
+		ply 								; array record into Y.
+		cmp 	$0004,y 					; compare index vs highest index
+		bcc 	_FVIndexOkay 				; if index <= highest it's okay.
+		beq 	_FVIndexOkay
+_FVIndexFail:		
+		jsr 	ReportError 				; bad index.
+		.text	"Bad Array Index",0 
+_FVIndexOkay:
+		asl 	a 							; multiply the index by 4
+		asl 	a 							; also clearing the carry.
+		sty 	DTemp1 						; add the address record
+		adc 	DTemp1 	
+		adc 	#6 							; add 6 for the header
+		sta 	DVariableDataAddress 
+		lda 	#rparenTokenID 				; check for )
+		jsr 	CheckNextToken
+		clc 								; return with carry clear
+		rts

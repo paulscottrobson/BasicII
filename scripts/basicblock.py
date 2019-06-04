@@ -183,9 +183,9 @@ class BasicBlock(object):
 				defaultValue = defaultValue & 0xFFFFFFFF
 				self.writeWord(addr,defaultValue & 0xFFFF)
 				self.writeWord(addr+2,defaultValue >> 16)
-				defaultValue += 0x100000
+				defaultValue += 0x10000
 			else:
-				string = "{0}:[{1}]".format(defaultValue,i)						# create string to store
+				string = "{0}.{1}".format(defaultValue,i)						# create string to store
 				if highIndex == 0:
 					string = defaultValue
 				self.writeWord(addr,self.createString(string))					# store address
@@ -284,7 +284,7 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'a=iar1(4)')
+	blk.addBASICLine(10,'a=strarr01$(0)+"---"+strarr01$(2)+"---"+sx1$')
 	blk.addInteger("minus2",-2)
 	blk.addInteger("x",44)
 	blk.addInteger("y",65540)

@@ -38,6 +38,9 @@ EvaluateReset:
 ;		Evaluate expression at (DCodePtr), returning value in YA, type in CS (1 = string)
 ;		This (and evaluatestring and evaluateinteger) are used when called from a keyword
 ;
+;		For a number returns 32 bit in YA, for a string returns 16 bit address in the 
+;		current page.
+;
 ;		When calling from a non-base, e.g. inside a unary function, use EvaluateNext(X)
 ;		functions.
 ;
