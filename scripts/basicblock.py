@@ -32,6 +32,11 @@ class BasicBlock(object):
 		self.tokeniser = Tokeniser()											# tokenises things
 		self.variables = {}														# variable info
 		self.lastProgramLineNumber = 0
+		if BasicBlock.HASHTABLESIZE != 0x20:
+			print("*** WARNING ***")
+			print("The hash table size per type has changed. This is calculated in")
+			print("variable.asm *not* using this constant value.")
+			assert False
 	#
 	#		Write binary out
 	#
@@ -209,6 +214,7 @@ class BasicBlock(object):
 	#		List variables.
 	#
 	def listVariables(self,handle = sys.stdout):
+		types = [ "","()","$","$()" ]
 		for typeID in range(0,4):												# Type range 0-4
 			for hashID in range(0,BasicBlock.HASHMASK+1): 						# Hash entries
 				hashPtr = self.baseAddress+BasicBlock.HASHTABLE+typeID*BasicBlock.HASHTABLESIZE+hashID*2
@@ -216,7 +222,7 @@ class BasicBlock(object):
 				if ptr != 0:
 					handle.write("{0}{1} Hash:{2} ${3:04x}\n".format("Integer" if typeID < 2 else "String","" if typeID % 2 == 0 else " Array",hashID,hashPtr))
 					while ptr != 0:
-						handle.write("\t${3:04x} {0:10} {1:3} [{2}]\n".format(self.extractName(self.readWord(ptr+2)),self.readWord(ptr+4),self.getData(ptr+6,self.readWord(ptr+4),typeID >= 2),ptr))
+						handle.write("\t${3:04x} {0:10} {1:3} [{2}]\n".format(self.extractName(self.readWord(ptr+2))+types[typeID],self.readWord(ptr+4),self.getData(ptr+6,self.readWord(ptr+4),typeID >= 2),ptr))
 						ptr = self.readWord(ptr)
 					handle.write("\n")
 	#
@@ -264,12 +270,11 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'a="hello"+",world"')
-	blk.addBASICLine(20,"let a=42")
-	blk.addInteger("minus1",-1)
+	blk.addBASICLine(10,'a=sx1$')
+	blk.addInteger("minus2",-2)
 	blk.addInteger("i1",42)
 	blk.addInteger("i1x",3142)
-	blk.addString("s1$","this is a string")
+	blk.addString("sx1$","this is a string")
 	blk.addIntegerArray("iar1(",42,4)
 	blk.addStringArray("strarr01$(","ast",3)
 	blk.export("temp/basic.bin")	

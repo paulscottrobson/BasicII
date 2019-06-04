@@ -202,8 +202,8 @@ _ELUnaryFunction:
 ;
 _ELVariable:
 		nop
-		nop
-		nop
+		jsr 	FindVariable 					; does the variable exist ?
+		bcs 	_ELUnknownVariable
 		bra 	_ELGotAtom
 ;
 ;		Handle (Parenthesis)
@@ -239,6 +239,10 @@ _ELMinusAtom:
 		sbc 	EXSValueH+2,x
 		sta 	EXSValueH+0,x
 		jmp 	_ELGotAtom
+
+_ELUnknownVariable:
+		jsr 	ReportError
+		.text	"Undeclared variable",0
 
 ; *******************************************************************************************
 ;

@@ -36,6 +36,7 @@ DTempStringPtr = DPBaseAddress + 24 		; Temporary string allocation (working dow
 DStartTempString = DPBaseaddress + 26 		; Start of current temporary string
 DCurrentTempString = DPBaseaddress + 28 	; Next free in current temporary string
 
+DVariableDataAddress = DPBaseAddress + 30 	; Address of 4 byte data
 
 ; ********************************************************************************
 ;
