@@ -201,10 +201,23 @@ _ELUnaryFunction:
 ;		Handle variable (sequence of identifier tokens)
 ;
 _ELVariable:
-		nop
+		lda 	(DCodePtr)						; get first token
+		pha 									; save on stack.
 		jsr 	FindVariable 					; does the variable exist ?
-		bcs 	_ELUnknownVariable
-		bra 	_ELGotAtom
+		bcs 	_ELUnknownVariable				; if not, goto error.
+
+		lda 	(DVariableDataAddress) 			; copy value into expression stack
+		sta 	EXSValueL+0,x
+		ldy 	#2
+		lda 	(DVariableDataAddress),y
+		sta 	EXSValueH+0,x
+
+		pla 									; get the first token back off the stack.
+		and 	#$1000 							; non-zero if it is a string.
+		asl 	EXSPrecType+0,x 				; shift the prectype left
+		adc 	#$FF00 							; put string bit into the carry bit
+		ror 	EXSPrecType+0,x 				; rotate the string bit in.
+		brl 	_ELGotAtom
 ;
 ;		Handle (Parenthesis)
 ;

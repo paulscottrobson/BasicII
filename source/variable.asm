@@ -12,7 +12,8 @@
 ; *******************************************************************************************
 ;
 ;		Find variable at CodePtr. Return CS if it doesn't exist. If exists, save the
-;		Variable Data Address in DVariableDataAddress and return Carry Clear
+;		Variable Data Address in DVariableDataAddress and return Carry Clear, and
+;		advance the token pointer past the identifier.
 ;
 ; *******************************************************************************************
 
@@ -30,6 +31,8 @@ FindVariable:
 		adc 	#BlockFastVariables 		; address offset in block
 		adc 	DBaseAddress 				; now contains the base address + offset + address
 		sta 	DVariableDataAddress 		; save address
+		inc 	DCodePtr 					; skip over token
+		inc 	DCodePtr
 		clc 								; and return CC == okay.
 		rts
 		;
@@ -60,8 +63,10 @@ _FVNext:
 		ldy 	#2 							; get the address of the string into DTemp2
 		lda 	(DTemp1),y
 		sta 	DTemp2 
-
-		ldy 	#0 							; now compare the tokens.
+		;
+		;		Compare the tokens at (DCodePtr) and (DTemp2)
+		;
+		ldy 	#0 							
 _FVCompare:
 		lda 	(DCodePtr),y 				; compare the two tokens
 		cmp 	(DTemp2),y
@@ -69,16 +74,27 @@ _FVCompare:
 		iny 								; advance token pointer by 2
 		iny
 		and 	#$2000 						; check the continuation bit.
-		bne 	_FVCompare 					; if set, then try the next two tokens.
+		bne 	_FVCompare 					; if set, then try the next two tokens, clear = match.
+		lda 	(DCodePtr)					; push the first token on the stack
+		pha
+		;
+		;		Advance code pointer past token.
+		;
+		tya 								; Y is the amount to advance it by.
+		clc
+		adc 	DCodePtr
+		sta 	DCodePtr		
+		;
+		pla 								; restore first token
+		nop
+		and 	#$0800 						; is it an array.
+		bne 	_FVIndexed 					; if so, need to calculate and apply the index.
 		;
 		lda 	DTemp1 						; copy current record + 6 to DVariableDataAddress
 		clc
 		adc 	#6
 		sta 	DVariableDataAddress
-
-		lda 	(DCodePtr) 					; look at the array bit in the token.
-		and 	#$0800						; if set, needs to be indexed.
-		bne 	_FVIndexed
+		;
 		clc 								; return with carry clear.
 		rts
 
@@ -87,3 +103,4 @@ _FVFail:									; didn't find the right one, so return with CS.
 		rts
 
 _FVIndexed:
+		bra 	_FVIndexed

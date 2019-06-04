@@ -152,7 +152,10 @@ class BasicBlock(object):
 	#		in high memory as the nearest simulation.
 	#
 	def addInteger(self,name,defaultValue):
-		self._addVariable(name,0,defaultValue,0)
+		if len(name) == 1:
+			self.writeFastVariable(name,defaultValue)
+		else:
+			self._addVariable(name,0,defaultValue,0)
 	def addString(self,name,defaultValue):
 		self._addVariable(name,2,defaultValue,0)
 	def addIntegerArray(self,name,defaultValue,highIndex):
@@ -177,6 +180,7 @@ class BasicBlock(object):
 		for i in range(0,highIndex+1):											# erase the data.
 			addr = variable + 6 + i * 4 										# where it goes.
 			if typeID < 2:														# integer.
+				defaultValue = defaultValue & 0xFFFFFFFF
 				self.writeWord(addr,defaultValue & 0xFFFF)
 				self.writeWord(addr+2,defaultValue >> 16)
 				defaultValue += 0x100000
@@ -186,6 +190,16 @@ class BasicBlock(object):
 					string = defaultValue
 				self.writeWord(addr,self.createString(string))					# store address
 				self.writeWord(addr+2,0)										# upper address is zero.
+	#
+	#		Write constant to fast variable.
+	#
+	def writeFastVariable(self,name,value):
+		name = name.upper()
+		assert len(name) == 1 and name >= "A" and name <= "Z"
+		addr = (ord(name[0])-ord('A'))*4+BasicBlock.FASTVARIABLES+self.baseAddress
+		value = value & 0xFFFFFFFF
+		self.writeWord(addr,value & 0xFFFF)
+		self.writeWord(addr+2,value >> 16)
 	#
 	#		Get the hash entry from the first word of the token.
 	#
@@ -270,12 +284,14 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'a=sx1$')
+	blk.addBASICLine(10,'a=iar1(4)')
 	blk.addInteger("minus2",-2)
-	blk.addInteger("i1",42)
+	blk.addInteger("x",44)
+	blk.addInteger("y",65540)
+	blk.addInteger("i1",-42)
 	blk.addInteger("i1x",3142)
 	blk.addString("sx1$","this is a string")
-	blk.addIntegerArray("iar1(",42,4)
+	blk.addIntegerArray("iar1(",132142,4)
 	blk.addStringArray("strarr01$(","ast",3)
 	blk.export("temp/basic.bin")	
 	blk.exportConstants("temp/block.inc")
