@@ -1,5 +1,4 @@
 TODO:-
-	String Concatenation / Temp string routines.
 	Modify basicblock to generate variables
 	Variables handling / Array handling in expressions, non autocreate.
 	Assignment statement creating variables

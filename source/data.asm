@@ -28,10 +28,13 @@ DTemp1 = DPBaseAddress + 8 					; *** LONG *** Temporary value
 DTemp2 = DPBaseAddress + 12 				; *** LONG *** Temporary value
 
 DSignCount = DPBaseAddress + 16 			; Sign count in division.
-DTempStringPtr = DPBaseAddress + 18 		; Temporary string allocation (working down)
-DConstantShift = DPBaseAddress + 20 		; Constant Shift used in expression evaluation
+DConstantShift = DPBaseAddress + 18 		; Constant Shift used in expression evaluation
 
-DRandom = DPBaseAddress + 22 				; *** LONG *** Random Seed
+DRandom = DPBaseAddress + 20 				; *** LONG *** Random Seed
+
+DTempStringPtr = DPBaseAddress + 24 		; Temporary string allocation (working down)
+DStartTempString = DPBaseaddress + 26 		; Start of current temporary string
+DCurrentTempString = DPBaseaddress + 28 	; Next free in current temporary string
 
 
 ; ********************************************************************************
