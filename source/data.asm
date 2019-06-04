@@ -18,7 +18,7 @@
 DPBaseAddress = $00 						; Base address used for direct page.
 											; (e.g. variables start at DP+nn)
 
-DPageNumber = DPBaseAddress 				; page number of workspace area
+DPageNumber = DPBaseAddress+0 				; page number of workspace area (upper 8 bits of address)
 DBaseAddress = DPBaseAddress+2 				; low memory for workspace area
 DHighAddress = DPBaseAddress+4 				; high memory for workspace area
 
@@ -26,13 +26,20 @@ DCodePtr = DPBaseAddress+6 					; address of code - current token.
 
 DTemp1 = DPBaseAddress + 8 					; *** LONG *** Temporary value
 DTemp2 = DPBaseAddress + 12 				; *** LONG *** Temporary value
+
 DSignCount = DPBaseAddress + 16 			; Sign count in division.
 DTempStringPtr = DPBaseAddress + 18 		; Temporary string allocation (working down)
-DConstantShift = DPBaseAddress + 20 		; Constant Shift
+DConstantShift = DPBaseAddress + 20 		; Constant Shift used in expression evaluation
 
 DRandom = DPBaseAddress + 22 				; *** LONG *** Random Seed
 
 
+; ********************************************************************************
+;
+;			Expression Stack. There are three entries, low and high word
+;			and combined type/precedence word.
+;
+; ********************************************************************************
 
 EXSBase = $100 								; Initial value of X at lowest stack level.
 

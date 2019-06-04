@@ -11,16 +11,18 @@
 
 StartOfBasicCode:
 
-	.include "temp/tokens.inc"						; tokens include file (generated)
-	.include "temp/block.inc"						; block constants include file (generated)
-	.include "data.asm" 							; data definition.
-	.include "expression.asm"
-	.include "binary/arithmetic.asm"				; binary arithmetic/string operators
-	.include "binary/bitwise.asm"
-	.include "binary/comparison.asm"
-	.include "binary/divide.asm"
-	.include "binary/multiply.asm"
-	.include "unary/simpleunary.asm"				; unary arithmetic/string operators.
+		.include "temp/tokens.inc"					; tokens include file (generated)
+		.include "temp/block.inc"					; block constants include file (generated)
+		.include "data.asm" 						; data definition.
+		.include "utility.asm"						; general utility stuff
+		.include "stringutils.asm"					; string memory utilities
+		.include "expression.asm" 					; expression evaluation
+		.include "binary/arithmetic.asm"			; binary arithmetic/string operators
+		.include "binary/bitwise.asm"
+		.include "binary/comparison.asm"
+		.include "binary/divide.asm"
+		.include "binary/multiply.asm"
+		.include "unary/simpleunary.asm"			; unary arithmetic/string operators.
 
 ; *******************************************************************************************
 ;
@@ -35,45 +37,26 @@ StartOfBasicCode:
 ; *******************************************************************************************
 
 SwitchBasicInstance:
-	rep 	#$30 									; 16 bit AX mode.
-	and 	#$00FF 									; make page number 24 bit
-	sta 	DPageNumber 							; save page, base, high
-	stx		DBaseAddress
-	sty 	DHighAddress
+		rep 	#$30 								; 16 bit A:X mode.
+		and 	#$00FF 								; make page number 24 bit
+		sta 	DPageNumber 						; save page, base, high in RAM.
+		stx		DBaseAddress
+		sty 	DHighAddress
 
-	xba 											; put the page number (goes in the DBR) in B
-	pha 											; then copy it into B.
-	plb
-	plb 
+		xba 										; put the page number (goes in the DBR) in B
+		pha 										; then copy it into B.
+		plb
+		plb 
 
-	jsr 	EvaluateReset
-	
-	lda 	#$4100+8 								; initialise Code Pointer
-	sta 	DCodePtr 
-	jsr 	Evaluate 								; evaluate it.
-	nop
-halt1:
-	cop 	#0
-	bra 	halt1
+		jsr 	EvaluateReset 						; start new instruction reset (temp string storage)
+		
+		lda 	#$4100+8 							; initialise Code Pointer
+		sta 	DCodePtr 
 
-IllegalToken:
-	jsr 	ReportError
-	.text 	"Bad token",0
-SyntaxError:
-	jsr 	ReportError
-	.text 	"Syntax Error",0
-	
-ReportError:
-	nop
-	bra 	ReportError
+		jsr 	Evaluate 							; evaluate it.
+		nop 
 
-CheckNextToken:
-	cmp 	(DCodePtr)
-	bne 	_CTKError
-	inc 	DCodePtr
-	inc 	DCodePtr
-	rts	
-_CTKError:
-	sta 	DTemp1
-	jsr 	ReportError
-	.text	"Missing ~",0
+	halt1:
+		cop 	#0
+		bra 	halt1
+

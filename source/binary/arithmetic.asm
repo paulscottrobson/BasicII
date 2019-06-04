@@ -45,7 +45,26 @@ _BAConcatenateString:
 	sta 	DTemp1
 	lda 	EXSValueL+2,x
 	sta 	DTemp2
-	nop
+	sep 	#$20								; switch into byte mode.
+	clc 										; work out the total length
+	lda 	(DTemp1)
+	adc 	(DTemp2)
+	bcs 	_BAConcatLengthError 				; string is too long.
+	rep 	#$20 								; back to 16 bit mode.
+
+	jsr 	StringTempAllocate 					; allocate string of that size in temp memory.
+	sta 	EXSValueL+0,x 						; update the address
+	stz 	EXSValueH+0,x
+
+	lda 	DTemp1 								; copy first string there.
+	jsr 	StringCreateCopy
+	lda 	DTemp2 								; copy second string there.
+	jsr 	StringCreateCopy
+	rts	
+
+_BAConcatLengthError: 							; come here if len(s1)+len(s2) > 255
+	jsr 	ReportError
+	.text 	"String too long",0
 
 ; *******************************************************************************************
 ;

@@ -27,7 +27,7 @@ EvaluateReset:
 		ldy 	#BlockHighMemoryPtr 		; reset temp store pointer, start at high memory.
 		lda 	(DBaseAddress),y
 		sec 								; allocate 256 bytes down. This gives clear space to
-		sbc 	#256 						; 'concrete' a string later on.
+		sbc 	#256 						; 'concrete' a string later on as must be 255 chars or less
 		sta 	DTempStringPtr 				; store as temporary string pointer start address.
 		rts
 
@@ -45,8 +45,9 @@ EvaluateReset:
 
 Evaluate:
 		ldx 	#EXSBase					; reset the stack base
-		lda 	#0<<9 						; current precedence level.
+		lda 	#0<<9 						; current precedence level, which is the lowest
 											; fall through.
+
 ; *******************************************************************************************
 ;
 ;		Evaluate a term/operator sequence at the current precedence level. A contains the
@@ -61,14 +62,16 @@ Evaluate:
 
 EvaluateLevel:
 		sta 	EXSPrecType+0,x 				; save precedence level, also sets type to integer.
+
 		lda 	(DCodePtr)						; look at the next token
 		beq 	_ELExpressionSyntax 			; EOL token, there's an error.
 		bmi 	_ELConstant 					; 8000-FFFF constant.
+		;
 		cmp 	#$1000 							; string constant ? 00xx
 		bcc 	_ELStringConstant
-		cmp 	#$2000 					
-		bcc 	_ELConstantShift				; constant shift ? 1xxx
-		bcs 	_ELKeywordFunction 				; must be 2000-7FFF e.g. identifier or keyword.
+		cmp 	#$2000 							; constant shift ? 1xxx
+		bcc 	_ELConstantShift				
+		bra 	_ELKeywordFunction 				; must be 2000-7FFF e.g. identifier or keyword.
 ;
 ;		Branch to syntax error (expression missing)
 ;
@@ -79,13 +82,15 @@ _ELExpressionSyntax:
 ;
 _ELStringConstant:
 		lda 	DCodePtr 						; get the address of the token
-		inc 	a 								; adding 2, start of the string
+		inc 	a 								; adding 2 goes to the start of the string (len byte)
 		inc 	a 	
 		sta 	EXSValueL+0,x 					; the LSB of the string.
 		stz 	EXSValueH+0,x 					; the MSB is always zero.
+
 		lda 	EXSPrecType+0,x 				; make type string
 		ora 	#$8000
 		sta 	EXSPrecType+0,x
+
 		clc
 		lda 	(DCodePtr) 						; add length to pointer to skip over
 		adc 	DCodePtr
@@ -119,18 +124,19 @@ _ELConstant:
 _ELGotAtom:
 		lda 	(DCodePtr)						; get the next token.
 		tay 									; save in Y, temporarily.
-		and 	#$F000 							; is it a binary operator keyword, 001x xxxx xxxx xxxx
+		and 	#$F000 							; is it a binary operator keyword, 0010 tttx xxxx xxxx
 		cmp 	#$2000
 		bne 	_ELExit 						; no, exit.
 
 		lda 	EXSPrecType,X 					; get current precedence level
-		and 	#$7FFF 							; remove the type bit.
+		and 	#$7FFF 							; remove the type bit, so it's the actual level.
 		sta 	DTemp1 							; save it.
 
 		tya 									; get token back
 		and 	#15<<9 							; mask out the precedence data.
 		cmp 	DTemp1 							; compare against current level
-		bcc 	_ELExit 						; if too low, then exit back.
+		bcc 	_ELExit 						; if too low, then exit this level
+		;
 		phy 									; save operator token on stack.
 		inc 	DCodePtr 						; skip over it
 		inc 	DCodePtr
@@ -142,9 +148,9 @@ _ELGotAtom:
 		jsr 	EvaluateLevel 
 		dex
 		dex
-		pla 									; get operator back
+		pla 									; get operator token back
 ;
-;		Call the keyword in A
+;		Call the keyword in A. The ID is the lower 9 bits.
 ;		
 _ELExecuteA:		
 		and 	#$01FF 							; keyword ID.
@@ -154,15 +160,16 @@ _ELExecuteA:
 		lda 	CommandJumpTable,x 				; this is the vector address
 		tyx 									; restore X.
 		sta 	_ELCallRoutine+1 				; Self modifying, will not work in ROM.
+		;
 _ELCallRoutine:
-		jsr 	_ELCallRoutine
+		jsr 	_ELCallRoutine 					; call the new address.
 		bra 	_ELGotAtom 						; go round operator level again.
 ;
 ;		Exit - put type in C (CS=String) and value in YA.
 ;
 _ELExit:
-		lda 	EXSPrecType+0,x 				; put bit 15 in carry flag
-		asl 	
+		lda 	EXSPrecType+0,x 				; put bit 15 - type bit - in carry flag
+		asl 	a
 		lda 	EXSValueL+0,x 					; put value in YA
 		ldy 	EXSValueH+0,x
 		rts
@@ -172,10 +179,12 @@ _ELExit:
 _ELKeywordFunction:
 		cmp 	#$4000 							; identifier (e.g. variable) if in range $4000-$7FFF
 		bcs 	_ELVariable 					; (we've already discounted 8000-FFFF)
+		;
 		cmp 	#minusTokenID 					; special case keywords -(atom) (expression)
 		beq 	_ELMinusAtom
 		cmp 	#lparenTokenID
 		beq 	_ELParenthesis
+		;
 		tay 									; save token in Y
 		and 	#$FE00 							; look for 0011 101x ? i.e. a unary function.
 		cmp 	#$3A00 							; if it isn't then exit
@@ -184,10 +193,10 @@ _ELKeywordFunction:
 ;		Handle Unary Function
 ;
 _ELUnaryFunction:
-		inc 	DCodePtr 						; skip over the unary function token
+		inc 	DCodePtr 						; skip over the unary function token, which is in Y
 		inc 	DCodePtr
 		tya 									; get token back
-		bra 	_ELExecuteA 					; and execute it.
+		bra 	_ELExecuteA 					; and execute it using the lower 9 bits of the token.
 ;
 ;		Handle variable (sequence of identifier tokens)
 ;
@@ -211,7 +220,7 @@ _ELParenthesis:
 		sta 	EXSValueH+0,x
 		brl 	_ELGotAtom 						; and go round looking for the next binary operator
 ;
-;		Handle -<atom>
+;		Handle -<atom> simple unary negation
 ;
 _ELMinusAtom:
 		inc 	DCodePtr 						; skip over the - token
@@ -219,10 +228,10 @@ _ELMinusAtom:
 		inx 									; make space
 		inx
 		lda 	#8<<9 							; means binary operation will be impossible.
-		jsr 	EvaluateLevel
+		jsr 	EvaluateLevel 					; we just want the next atom. (does allow -(xxx))
 		dex
 		dex
-		sec 									; do the subtraction
+		sec 									; do the subtraction 0-result to negate it.
 		lda 	#0
 		sbc 	EXSValueL+2,x
 		sta 	EXSValueL+0,x
@@ -230,7 +239,6 @@ _ELMinusAtom:
 		sbc 	EXSValueH+2,x
 		sta 	EXSValueH+0,x
 		jmp 	_ELGotAtom
-
 
 ; *******************************************************************************************
 ;
@@ -245,7 +253,7 @@ CheckBothNumeric:
 		rts
 _CNError:
 		jsr 	ReportError
-		.text	"Numeric value expected",0
+		.text	"Numeric values expected",0
 
 ; *******************************************************************************************
 ;
@@ -310,3 +318,4 @@ EvaluateNextString:
 		jsr 	EvaluateNext
 		bcc 	ESType
 		rts
+

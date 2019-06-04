@@ -67,7 +67,7 @@ Function_Sgn: ;; sgn(
 		jsr 	CheckNextToken
 		stz 	EXSValueL+0,x 				; zero the result
 		stz 	EXSValueH+0,x
-		lda 	EXSValueH+2,x 				; get sign of result from high bit of upper wod.
+		lda 	EXSValueH+2,x 				; get sign of result from high bit of upper word.
 		bmi 	_FSgnNegative 				; set to -1 if signed
 		ora 	EXSValueL+2,x 				; exit if zero as we already reset it.
 		beq 	_FSgnExit
@@ -120,3 +120,4 @@ _Rnd_Exit:
 		lda 	DRandom
 		eor 	DRandom+2
 		rts
+

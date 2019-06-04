@@ -1,7 +1,12 @@
 TODO:-
 	String Concatenation / Temp string routines.
-	Variables.
+	Modify basicblock to generate variables
+	Variables handling / Array handling in expressions, non autocreate.
+	Assignment statement creating variables
+	Array allocation.
 
 Outstanding:
-	Expand Expression stack
+	EvaluateReset checks temporary stack space.
+	Expand Expression stack (after testing)
 	Check Expression complexity.
+	Make Missing Token say which one (needs detokeniser)

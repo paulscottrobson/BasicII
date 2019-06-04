@@ -25,9 +25,11 @@
 	jmp 	SwitchBasicInstance
 
 	* = $10000
-	.include "basic.asm"
+	.include "basic.asm" 							; this is the BASIC image. Note currently
+													; this has self modifying code at despatch
+													; in expression.asm
 
-	*=$24000 										; actual code goes here, demo at 02-4000
+	*=$24000 										; actual code goes here, demo at 02:4000
 CodeSpace:
 	.binary "temp/basic.bin"
 CodeEndSpace:
