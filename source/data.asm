@@ -38,6 +38,8 @@ DCurrentTempString = DPBaseaddress + 28 	; Next free in current temporary string
 
 DVariableDataAddress = DPBaseAddress + 30 	; Address of 4 byte data
 
+DLineNumber = DPBaseAddress + 32 			; Current Line Number
+
 ; ********************************************************************************
 ;
 ;			Expression Stack. There are three entries, low and high word

@@ -90,6 +90,12 @@ class BasicBlock(object):
 		assert self.readWord(self.baseAddress+BasicBlock.LOWPTR) < self.readWord(self.baseAddress+BasicBlock.HIGHPTR)
 		return addr
 	#
+	#		Read a byte from memory
+	#
+	def readByte(self,addr):
+		assert addr >= self.baseAddress and addr <= self.endAddress
+		return self.data[addr - self.baseAddress]
+	#
 	#		Read a word from memory
 	#
 	def readWord(self,addr):
@@ -153,7 +159,8 @@ class BasicBlock(object):
 		for t in codeLine:														# write it out
 			self.writeWord(pos,t)  
 			pos += 2
-		self.resetLowMemory() 													# and reset low memory
+		pos = self.resetLowMemory() 											# and reset low memory
+		assert pos < self.readWord(self.baseAddress+BasicBlock.HIGHPTR)-1024		
 	#
 	#		Add a variable (multiple front ends). Names and string contents are allocated
 	#		in high memory as the nearest simulation.
@@ -228,7 +235,7 @@ class BasicBlock(object):
 		self._export("BlockHashTable",BasicBlock.HASHTABLE)
 		self._export("BlockHashTableSize",BasicBlock.HASHTABLESIZE)
 		self._export("BlockHashMask",BasicBlock.HASHMASK)
-		self._export("BlockProgranStart",BasicBlock.PROGRAM)
+		self._export("BlockProgramStart",BasicBlock.PROGRAM)
 		self.handle.close()
 	#
 	def _export(self,name,value):
@@ -243,7 +250,7 @@ class BasicBlock(object):
 			addr = BasicBlock.FASTVARIABLES+i*4+self.baseAddress
 			data = self.readLong(addr)		
 			if data != 0:
-				handle.write("\t${0:04x} {1:10} {2:3} [${3:04x}]\n".format(addr,chr(i+97),0,data))
+				handle.write("\t${0:04x} {1:10} {2:3} [{3}]\n".format(addr,chr(i+97),0,data))
 		handle.write("\n")
 
 		for typeID in range(0,4):												# Type range 0-4
@@ -277,7 +284,7 @@ class BasicBlock(object):
 		if isString:
 			dataList = ['"{0}"@${1:04x}'.format(self.readString(x),x) for x in dataList]
 		else:
-			dataList = ["${0:x}".format(x) for x in dataList]
+			dataList = ["{0}".format(x) for x in dataList]
 		return ",".join(dataList)
 	#
 	def toASCII(self,c):
@@ -287,7 +294,7 @@ class BasicBlock(object):
 	#
 	def readString(self,ptr):
 		count = self.readWord(ptr) & 0xFF
-		s = [self.readWord(ptr+i+1) & 0xFF for i in range(0,count)]
+		s = [self.readByte(ptr+i+1) for i in range(0,count)]
 		return "".join([chr(x) for x in s])
 
 BasicBlock.ID = "BASC"															# ID
@@ -301,7 +308,8 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'i1ab$ = "["+strarr01$(2)+"]"')
+	blk.addBASICLine(10,'let t1 = 42:t2 = 43:let a$="hello":let b$="world"')
+	blk.addBASICLine(20,'let c$ = a$+","+b$')
 	blk.addInteger("minus2",-2)
 	blk.addInteger("x",44)
 	blk.addInteger("y",65540)

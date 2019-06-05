@@ -10,11 +10,14 @@
 ; *******************************************************************************************
 
 Function_Let: ;; let
+		lda 	(DCodePtr) 					; get the first token
+		and 	#$C000 						; check it is identifier 01xx xxxx xxxx xxxx
+		cmp 	#$4000
+		bne 	_FLetSyntax
 		lda 	(DCodePtr) 					; push the identifier token on the stack.
 		pha
 		jsr 	FindVariable 				; find the variable that we will set the value of.
 		bcc		_FLetFound		
-
 		;
 		;		The variable doesn't exist, so we need to create it, except for arrays.
 		;		
@@ -23,6 +26,10 @@ Function_Let: ;; let
 		and 	#$0800 						; is it an array		
 		beq 	_FLetCreate 				; if so , create it.
 		#error 	"Unknown array"				; cannot auto instantiate arrays.
+		;
+_FLetSyntax:
+		jmp 	SyntaxError
+		;
 _FLetCreate:
 		lda 	#$0000 						; maximum index - only 1 as cd	variable.
 		ldy 	DCodePtr 					; address of the token in Y.

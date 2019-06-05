@@ -1,10 +1,10 @@
 TODO:-
-	ASSERT
-	Execution.
-	Testing of assignment
-	Testing of basic arithmetic
+	Testing of basic arithmetic functions
+	Testing of basic string functions.
 	Array allocation.
 	Extend testing to include arrays.
+	Clear Variables / Reset top/bottom pointers on RUN.
+	Add a execution stack which is Reset at the start.
 
 Outstanding:
 	Allocating Variable Memory check possible.

@@ -22,11 +22,13 @@
 	sgn( 	abs( 	len(	 					## standard functions.
 	
 [syntax]
-	, 	;	:	(	)
+	, 	;		(	)	:
 
 [keyword]										
 	let  										## assignment	
-
+	assert 										## assert command. testing but good practice.
+	end
+	run	
 ##
 ##	Unimplemented (that are listed)
 ##

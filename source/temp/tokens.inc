@@ -25,10 +25,13 @@ CommandJumpTable:
 	.word Function_Len             & $FFFF ; token $3a14 "len("
 	.word IllegalToken             & $FFFF ; token $3c15 ","
 	.word IllegalToken             & $FFFF ; token $3c16 ";"
-	.word IllegalToken             & $FFFF ; token $3c17 ":"
-	.word IllegalToken             & $FFFF ; token $3c18 "("
-	.word IllegalToken             & $FFFF ; token $3c19 ")"
+	.word IllegalToken             & $FFFF ; token $3c17 "("
+	.word IllegalToken             & $FFFF ; token $3c18 ")"
+	.word IllegalToken             & $FFFF ; token $3c19 ":"
 	.word Function_Let             & $FFFF ; token $3e1a "let"
+	.word Function_ASSERT          & $FFFF ; token $3e1b "assert"
+	.word Function_END             & $FFFF ; token $3e1c "end"
+	.word Function_RUN             & $FFFF ; token $3e1d "run"
 
 ;
 ;	Token text table. Byte is typeID[7:4] length[3:0]
@@ -56,10 +59,13 @@ TokenText:
 	.text $d5,"len("     ; token $3a14
 	.text $e2,","        ; token $3c15
 	.text $e2,";"        ; token $3c16
-	.text $e2,":"        ; token $3c17
-	.text $e2,"("        ; token $3c18
-	.text $e2,")"        ; token $3c19
+	.text $e2,"("        ; token $3c17
+	.text $e2,")"        ; token $3c18
+	.text $e2,":"        ; token $3c19
 	.text $f4,"let"      ; token $3e1a
+	.text $f7,"assert"   ; token $3e1b
+	.text $f4,"end"      ; token $3e1c
+	.text $f4,"run"      ; token $3e1d
 	.byte $00
 
 ;
@@ -87,7 +93,10 @@ abslparenTokenID                 = $3a13
 lenlparenTokenID                 = $3a14
 commaTokenID                     = $3c15
 semicolonTokenID                 = $3c16
-colonTokenID                     = $3c17
-lparenTokenID                    = $3c18
-rparenTokenID                    = $3c19
+lparenTokenID                    = $3c17
+rparenTokenID                    = $3c18
+colonTokenID                     = $3c19
 letTokenID                       = $3e1a
+assertTokenID                    = $3e1b
+endTokenID                       = $3e1c
+runTokenID                       = $3e1d
