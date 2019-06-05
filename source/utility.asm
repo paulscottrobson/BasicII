@@ -44,11 +44,6 @@ SyntaxError:
 ;
 ; *******************************************************************************************
 
-ExpectRightBracket:							; shorthand because right parenthesis common
-		lda 	#rparenTokenID
-		bra 	ExpectToken
-ExpectComma:
-		lda 	#commaTokenID 				; shorthand because comma is used a fair bit.
 ExpectToken:
 		cmp 	(DCodePtr) 					; does it match the next token
 		bne 	_CTKError					; error if not
@@ -57,3 +52,20 @@ ExpectToken:
 		rts	
 _CTKError:
 		#error	"Missing token"
+
+; *******************************************************************************************
+
+ExpectRightBracket:							; shorthand because right parenthesis common
+		pha
+		lda 	#rparenTokenID
+		jsr 	ExpectToken
+		pla
+		rts
+
+ExpectComma:
+		pha
+		lda 	#commaTokenID 				; shorthand because comma is used a fair bit.
+		jsr 	ExpectToken
+		pla
+		rts
+
