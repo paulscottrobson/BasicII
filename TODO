@@ -1,6 +1,7 @@
 TODO:-
-	Assignment statement creating variables
-	Assert.
+	Make string concrete code
+	Create variables on assignment, error if array.
+	ASSERT
 	Execution.
 	Array allocation.
 

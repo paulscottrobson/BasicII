@@ -24,6 +24,7 @@ StartOfBasicCode:
 		.include "binary/divide.asm"
 		.include "binary/multiply.asm"
 		.include "unary/simpleunary.asm"			; unary arithmetic/string operators.
+		.include "commands/let.asm"					; command code.
 
 error	.macro
 		jsr 	ErrorHandler
@@ -56,12 +57,9 @@ SwitchBasicInstance:
 
 		jsr 	EvaluateReset 						; start new instruction reset (temp string storage)
 		
-		lda 	#$4100+8 							; initialise Code Pointer
+		lda 	#$4100+4 							; initialise Code Pointer
 		sta 	DCodePtr 
-
-		jsr 	Evaluate 							; evaluate it.
-		nop 
-
+		jsr 	Function_LET 						; evaluate it.
 	halt1:
 		cop 	#0
 		bra 	halt1

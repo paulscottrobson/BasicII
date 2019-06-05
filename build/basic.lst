@@ -1,7 +1,7 @@
 
 ; 64tass Turbo Assembler Macro V1.53.1515? listing file
 ; tass64 --m65816 -f -q -o basic.bin -L basic.lst ../source/start.asm
-; Wed Jun  5 16:01:20 2019
+; Wed Jun  5 16:38:41 2019
 
 ;Offset	;Hex		;Monitor	;Source
 
@@ -17,7 +17,7 @@
 .000c	a9 02 00	lda #$0002		lda 	#CodeSpace >> 16 						; put the page number in A ($2)
 .000f	a2 00 40	ldx #$4000		ldx 	#CodeSpace & $FFFF 						; and the base address in X ($4000)
 .0012	a0 00 c0	ldy #$c000		ldy 	#CodeEndSpace & $FFFF					; and the end address in Y ($C000)
-.0015	5c a9 06 01	jmp $0106a9		jmp 	SwitchBasicInstance
+.0015	5c e3 06 01	jmp $0106e3		jmp 	SwitchBasicInstance
 
 ;******  Processing file: ../source/basic.asm
 
@@ -52,7 +52,7 @@
 >01002e	2a 01					.word IllegalToken             & $FFFF ; token $3c17 ":"
 >010030	2a 01					.word IllegalToken             & $FFFF ; token $3c18 "("
 >010032	2a 01					.word IllegalToken             & $FFFF ; token $3c19 ")"
->010034	2a 01					.word IllegalToken             & $FFFF ; token $3e1a "let"
+>010034	a9 06					.word Function_Let             & $FFFF ; token $3e1a "let"
 .010036					TokenText:
 >010036	04 61 6e 64				.text $04,"and"      ; token $2001
 >01003a	03 6f 72				.text $03,"or"       ; token $2002
@@ -1005,24 +1005,60 @@
 
 ;******  Return to file: ../source/basic.asm
 
-.0106a9					SwitchBasicInstance:
-.0106a9	c2 30		rep #$30			rep 	#$30 								; 16 bit A:X mode.
-.0106ab	29 ff 00	and #$00ff			and 	#$00FF 								; make page number 24 bit
-.0106ae	85 00		sta $00				sta 	DPageNumber 						; save page, base, high in RAM.
-.0106b0	86 02		stx $02				stx		DBaseAddress
-.0106b2	84 04		sty $04				sty 	DHighAddress
-.0106b4	eb		xba				xba 										; put the page number (goes in the DBR) in B
-.0106b5	48		pha				pha 										; then copy it into B.
-.0106b6	ab		plb				plb
-.0106b7	ab		plb				plb
-.0106b8	20 b5 01	jsr $0101b5			jsr 	EvaluateReset 						; start new instruction reset (temp string storage)
-.0106bb	a9 08 41	lda #$4108			lda 	#$4100+8 							; initialise Code Pointer
-.0106be	85 06		sta $06				sta 	DCodePtr
-.0106c0	20 c1 01	jsr $0101c1			jsr 	Evaluate 							; evaluate it.
-.0106c3	ea		nop				nop
-.0106c4						halt1:
-.0106c4	02 00		cop #$00			cop 	#0
-.0106c6	80 fc		bra $0106c4			bra 	halt1
+
+;******  Processing file: ../source/commands/let.asm
+
+.0106a9					Function_Let:
+.0106a9	b2 06		lda ($06)			lda 	(DCodePtr) 					; push the identifier token on the stack.
+.0106ab	48		pha				pha
+.0106ac	20 86 00	jsr $010086			jsr 	FindVariable 				; find the variable that we will set the value of.
+.0106af	90 01		bcc $0106b2			bcc		_FLetFound
+.0106b1	ea		nop				nop
+.0106b2					_FLetFound:
+.0106b2	68		pla				pla 								; token to A
+.0106b3	a4 1e		ldy $1e				ldy 	DVariableDataAddress 		; push the target address on the stack
+.0106b5	5a		phy				phy
+.0106b6	29 00 10	and #$1000			and 	#$1000 						; check to see if it is a string assignment
+.0106b9	d0 13		bne $0106ce			bne 	_FLetStringAssign
+.0106bb	a9 06 22	lda #$2206			lda 	#equalTokenID 				; check for the equal presence.
+.0106be	20 4b 01	jsr $01014b			jsr 	ExpectToken
+.0106c1	20 19 03	jsr $010319			jsr 	EvaluateInteger 			; get an integer.
+.0106c4	bb		tyx				tyx 								; result is now in XA
+.0106c5	7a		ply				ply 								; target address in Y
+.0106c6	99 00 00	sta $0000,y			sta 	$0000,y 					; save low word
+.0106c9	8a		txa				txa
+.0106ca	99 02 00	sta $0002,y			sta 	$0002,y 					; save high word
+.0106cd	60		rts				rts 								; and complete.
+.0106ce					_FLetStringAssign:
+.0106ce	a9 06 22	lda #$2206			lda 	#equalTokenID 				; check for the equal presence.
+.0106d1	20 4b 01	jsr $01014b			jsr 	ExpectToken
+.0106d4	20 38 03	jsr $010338			jsr 	EvaluateString 				; get a string.
+.0106d7	ea		nop				nop
+.0106d8	7a		ply				ply 								; target address in Y
+.0106d9	99 00 00	sta $0000,y			sta 	$0000,y 					; set LSW
+.0106dc	a9 00 00	lda #$0000			lda 	#$0000
+.0106df	99 02 00	sta $0002,y			sta 	$0002,y 					; clear LSW as its a string
+.0106e2	60		rts				rts
+
+;******  Return to file: ../source/basic.asm
+
+.0106e3					SwitchBasicInstance:
+.0106e3	c2 30		rep #$30			rep 	#$30 								; 16 bit A:X mode.
+.0106e5	29 ff 00	and #$00ff			and 	#$00FF 								; make page number 24 bit
+.0106e8	85 00		sta $00				sta 	DPageNumber 						; save page, base, high in RAM.
+.0106ea	86 02		stx $02				stx		DBaseAddress
+.0106ec	84 04		sty $04				sty 	DHighAddress
+.0106ee	eb		xba				xba 										; put the page number (goes in the DBR) in B
+.0106ef	48		pha				pha 										; then copy it into B.
+.0106f0	ab		plb				plb
+.0106f1	ab		plb				plb
+.0106f2	20 b5 01	jsr $0101b5			jsr 	EvaluateReset 						; start new instruction reset (temp string storage)
+.0106f5	a9 04 41	lda #$4104			lda 	#$4100+4 							; initialise Code Pointer
+.0106f8	85 06		sta $06				sta 	DCodePtr
+.0106fa	20 a9 06	jsr $0106a9			jsr 	Function_LET 						; evaluate it.
+.0106fd						halt1:
+.0106fd	02 00		cop #$00			cop 	#0
+.0106ff	80 fc		bra $0106fd			bra 	halt1
 
 ;******  Return to file: ../source/start.asm
 
@@ -1031,28 +1067,25 @@
 >024008	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 ;	...repeated 4 times (64 bytes)...
 >024058	00 00 00 00 00 00 00 00 2c 00 00 00 04 00 01 00
->024068	00 00 00 00 00 00 00 00 9c 41 b1 bf 00 00 00 00
->024078	00 00 00 00 00 00 00 00 00 00 00 00 44 41 00 00
->024088	00 00 58 41 00 00 00 00 00 00 00 00 00 00 00 00
+>024068	00 00 00 00 00 00 00 00 7a 41 b1 bf 00 00 00 00
+>024078	00 00 00 00 00 00 00 00 00 00 00 00 22 41 00 00
+>024088	00 00 36 41 00 00 00 00 00 00 00 00 00 00 00 00
 >024098	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->0240a8	00 00 00 00 6c 41 00 00 00 00 00 00 00 00 00 00
+>0240a8	00 00 00 00 4a 41 00 00 00 00 00 00 00 00 00 00
 >0240b8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->0240c8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 62 41
+>0240c8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 40 41
 >0240d8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->0240e8	00 00 00 00 00 00 86 41 00 00 00 00 00 00 00 00
->0240f8	00 00 00 00 00 00 00 00 3e 00 0a 80 01 40 06 22
->024108	14 3a 97 7b 3f 78 3c 7b 07 5d 00 80 19 3c 0a 24
->024118	06 00 03 2d 2d 2d 0a 24 97 7b 3f 78 3c 7b 07 5d
->024128	02 80 19 3c 0a 24 06 00 03 2d 2d 2d 0a 24 4b 74
->024138	1c 50 19 3c 00 00 00 00 ee ee ee ee 00 00 fa bf
->024148	00 00 fe ff ff ff 00 00 f8 bf 00 00 d6 ff ff ff
->024158	4e 41 f4 bf 00 00 46 0c 00 00 00 00 f0 bf 00 00
->024168	dd bf 00 00 00 00 d9 bf 04 00 2e 04 02 00 2e 04
->024178	03 00 2e 04 04 00 2e 04 05 00 2e 04 06 00 00 00
->024188	d1 bf 03 00 c9 bf 00 00 c1 bf 00 00 b9 bf 00 00
->024198	b1 bf 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->0241a8	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-;	...repeated 2015 times (32240 bytes)...
+>0240e8	00 00 00 00 00 00 64 41 00 00 00 00 00 00 00 00
+>0240f8	00 00 00 00 00 00 00 00 1c 00 0a 80 97 7b 3f 78
+>024108	3c 7b 07 5d 01 80 19 3c 06 22 08 00 05 68 65 6c
+>024118	6c 6f 00 00 00 00 ee ee ee ee 00 00 fa bf 00 00
+>024128	fe ff ff ff 00 00 f8 bf 00 00 d6 ff ff ff 2c 41
+>024138	f4 bf 00 00 46 0c 00 00 00 00 f0 bf 00 00 dd bf
+>024148	00 00 00 00 d9 bf 04 00 2e 04 02 00 2e 04 03 00
+>024158	2e 04 04 00 2e 04 05 00 2e 04 06 00 00 00 d1 bf
+>024168	03 00 c9 bf 00 00 c1 bf 00 00 b9 bf 00 00 b1 bf
+>024178	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+;	...repeated 2018 times (32288 bytes)...
 >02bfa8	00 00 00 00 00 00 00 00 00 05 61 73 74 2e 33 00
 >02bfb8	00 05 61 73 74 2e 32 00 00 05 61 73 74 2e 31 00
 >02bfc8	00 05 61 73 74 2e 30 00 00 97 7b 3f 78 3c 7b 07

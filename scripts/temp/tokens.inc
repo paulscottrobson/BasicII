@@ -28,7 +28,7 @@ CommandJumpTable:
 	.word IllegalToken             & $FFFF ; token $3c17 ":"
 	.word IllegalToken             & $FFFF ; token $3c18 "("
 	.word IllegalToken             & $FFFF ; token $3c19 ")"
-	.word IllegalToken             & $FFFF ; token $3e1a "let"
+	.word Function_Let             & $FFFF ; token $3e1a "let"
 
 ;
 ;	Token text table. Byte is typeID[7:4] length[3:0]

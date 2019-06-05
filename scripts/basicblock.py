@@ -238,6 +238,15 @@ class BasicBlock(object):
 	#
 	def listVariables(self,handle = sys.stdout):
 		types = [ "","()","$","$()" ]
+		handle.write("Integer Fast\n")
+		for i in range(0,26):													# show non-zero fasts
+			addr = BasicBlock.FASTVARIABLES+i*4+self.baseAddress
+			data = self.readLong(addr)		
+			print(i,addr,data,self.readWord(addr),self.readWord(addr+2))
+			if data != 0:
+				handle.write("\t${0:04x} {1:10} {2:3} [${3:04x}]\n".format(addr,chr(i+97),0,data))
+		handle.write("\n")
+
 		for typeID in range(0,4):												# Type range 0-4
 			for hashID in range(0,BasicBlock.HASHMASK+1): 						# Hash entries
 				hashPtr = self.baseAddress+BasicBlock.HASHTABLE+typeID*BasicBlock.HASHTABLESIZE+hashID*2
@@ -293,7 +302,7 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'a=len(strarr01$(0)+"---"+strarr01$(2)+"---"+sx1$)')
+	blk.addBASICLine(10,'strarr01$(1) = "hello"')
 	blk.addInteger("minus2",-2)
 	blk.addInteger("x",44)
 	blk.addInteger("y",65540)
