@@ -151,6 +151,8 @@ class BasicBlock(object):
 	#		Add a variable (multiple front ends). Names and string contents are allocated
 	#		in high memory as the nearest simulation.
 	#
+	#		AddInteger has a special case (the fast variables) when A-Z used.
+	#
 	def addInteger(self,name,defaultValue):
 		if len(name) == 1:
 			self.writeFastVariable(name,defaultValue)
@@ -284,7 +286,7 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'a=strarr01$(0)+"---"+strarr01$(2)+"---"+sx1$')
+	blk.addBASICLine(10,'a=len(strarr01$(0)+"---"+strarr01$(2)+"---"+sx1$)')
 	blk.addInteger("minus2",-2)
 	blk.addInteger("x",44)
 	blk.addInteger("y",65540)
@@ -296,3 +298,4 @@ if __name__ == "__main__":
 	blk.export("temp/basic.bin")	
 	blk.exportConstants("temp/block.inc")
 	blk.listVariables()
+

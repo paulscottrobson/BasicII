@@ -228,8 +228,7 @@ _ELParenthesis:
 		inc 	DCodePtr 						; skip over the ( token
 		inc 	DCodePtr
 		jsr 	EvaluateNext 					; calculate the value in parenthesis, using next space on the stack.
-		lda 	#rparenTokenID 					; check for ) which should close the parenthesised expression.
-		jsr 	CheckNextToken		
+		jsr 	ExpectRightBracket 				; check for ) which should close the parenthesised expression.
 		lda 	EXSValueL+2,x 					; copy the value in directly from level 2 to level 0.
 		sta 	EXSValueL+0,x
 		lda 	EXSValueH+2,x
@@ -257,8 +256,7 @@ _ELMinusAtom:
 		jmp 	_ELGotAtom
 
 _ELUnknownVariable:
-		jsr 	ReportError
-		.text	"Undeclared variable",0
+		#error	"Undeclared variable"
 
 ; *******************************************************************************************
 ;
@@ -272,8 +270,7 @@ CheckBothNumeric:
 		bmi 	_CNError
 		rts
 _CNError:
-		jsr 	ReportError
-		.text	"Numeric values expected",0
+		#error	"Numeric values expected"
 
 ; *******************************************************************************************
 ;
@@ -287,7 +284,6 @@ ResetTypeInteger:
 		sta 	EXSPrecType+0,x
 		rts
 		
-
 ; *******************************************************************************************
 ;
 ;		Calculate a result at the next stack level. This is used when expression evaluation
@@ -318,8 +314,7 @@ EvaluateInteger:
 		bcs 	EIType
 		rts
 EIType:		
-		jsr 	ReportError
-		.text 	"Number expected",$00
+		#error 	"Number expected"
 
 EvaluateNextInteger:
 		jsr 	EvaluateNext
@@ -331,8 +326,7 @@ EvaluateString:
 		bcc 	ESType
 		rts
 ESType:		
-		jsr 	ReportError
-		.text 	"String expected",$00
+		#error 	"String expected"
 
 EvaluateNextString:
 		jsr 	EvaluateNext

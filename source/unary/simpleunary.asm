@@ -18,8 +18,7 @@
 Function_Len: ;; len(
 		jsr 	ResetTypeInteger 			; returns an integer
 		jsr 	EvaluateNextString 			; get the value you are absoluting
-		lda 	#RParenTokenID 				; check )
-		jsr 	CheckNextToken
+		jsr 	ExpectRightBracket 			; check )
 		ldy 	EXSValueL+2,x 				; address of string.
 		lda 	$0000,y 					; get the string length
 		and 	#$00FF 						; as a byte
@@ -36,8 +35,7 @@ Function_Len: ;; len(
 Function_Abs: ;; abs( 
 		jsr 	ResetTypeInteger 			; returns an integer
 		jsr 	EvaluateNextInteger 		; get the value you are absoluting
-		lda 	#RParenTokenID 				; check )
-		jsr 	CheckNextToken
+		jsr 	ExpectRightBracket 			; check )
 		lda 	EXSValueH+2,x 				; get sign of result from the upper word.
 		bmi 	_FAbsNegative 				; negate it if negative
 		sta 	EXSValueH+0,x 				; otherwise just copy it.
@@ -63,8 +61,7 @@ _FAbsNegative:
 Function_Sgn: ;; sgn( 
 		jsr 	ResetTypeInteger 			; returns integer
 		jsr 	EvaluateNextInteger 		; get an integer
-		lda 	#RParenTokenID 				; check )
-		jsr 	CheckNextToken
+		jsr 	ExpectRightBracket 			; check )
 		stz 	EXSValueL+0,x 				; zero the result
 		stz 	EXSValueH+0,x
 		lda 	EXSValueH+2,x 				; get sign of result from high bit of upper word.

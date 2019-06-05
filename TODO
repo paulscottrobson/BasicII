@@ -1,11 +1,11 @@
 TODO:-
+	Assignment statement creating variables
 	Assert.
 	Execution.
-	Assignment statement creating variables
 	Array allocation.
 
 Outstanding:
-	EvaluateReset checks temporary stack space.
-	Expand Expression stack (after testing)
-	Check Expression complexity.
+	Allocating Memory for temp checks that it is possible.
+	Concreting String checks that it is possible a$="hello" could fail ?
+	Expand Expression stack (after testing) / Check Expression complexity limit.
 	Make Missing Token say which one (needs detokeniser)

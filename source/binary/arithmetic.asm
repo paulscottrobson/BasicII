@@ -31,12 +31,10 @@ Binary_Add: ;; +
 	rts
 	;
 _BATypeError:
-	jsr 	ReportError
-	.text 	"+ operator can't mix types",$00
+	#error 	"+ operator can't mix types"
 	;
 _BALengthError:
-	jsr 	ReportError
-	.text 	"String too long",$00
+	#error	"String too long"
 	;
 	;		String concatenation
 	;
@@ -63,8 +61,7 @@ _BAConcatenateString:
 	rts	
 
 _BAConcatLengthError: 							; come here if len(s1)+len(s2) > 255
-	jsr 	ReportError
-	.text 	"String too long",0
+	#error 	"String too long"
 
 ; *******************************************************************************************
 ;

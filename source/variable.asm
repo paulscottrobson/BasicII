@@ -116,8 +116,8 @@ _FVIndexed:
 		bcc 	_FVIndexOkay 				; if index <= highest it's okay.
 		beq 	_FVIndexOkay
 _FVIndexFail:		
-		jsr 	ReportError 				; bad index.
-		.text	"Bad Array Index",0 
+		#error	"Bad Array Index"
+
 _FVIndexOkay:
 		asl 	a 							; multiply the index by 4
 		asl 	a 							; also clearing the carry.
@@ -125,7 +125,7 @@ _FVIndexOkay:
 		adc 	DTemp1 	
 		adc 	#6 							; add 6 for the header
 		sta 	DVariableDataAddress 
-		lda 	#rparenTokenID 				; check for )
-		jsr 	CheckNextToken
+		jsr 	ExpectRightBracket
 		clc 								; return with carry clear
 		rts
+

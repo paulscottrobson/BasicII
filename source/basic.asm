@@ -25,6 +25,11 @@ StartOfBasicCode:
 		.include "binary/multiply.asm"
 		.include "unary/simpleunary.asm"			; unary arithmetic/string operators.
 
+error	.macro
+		jsr 	ErrorHandler
+		.text 	\1,$00
+		.endm
+
 ; *******************************************************************************************
 ;
 ;							Enter BASIC / switch to new instance

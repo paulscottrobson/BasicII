@@ -11,13 +11,23 @@
 
 ; *******************************************************************************************
 ;
+;								Report Error, at return address
+;
+; *******************************************************************************************
+	
+ErrorHandler:
+		rep 	#$30 						; in case we changed it.
+		nop
+_EH1:	bra 	_EH1
+
+; *******************************************************************************************
+;
 ;				Default handler for keywords, produces error if not implemented
 ;
 ; *******************************************************************************************
 
 IllegalToken:
-		jsr 	ReportError
-		.text 	"Bad token",0
+		#error 	"Illegal Token"
 
 ; *******************************************************************************************
 ;
@@ -26,19 +36,7 @@ IllegalToken:
 ; *******************************************************************************************
 
 SyntaxError:
-		jsr 	ReportError
-		.text 	"Syntax Error",0
-
-; *******************************************************************************************
-;
-;								Report Error, at return address
-;
-; *******************************************************************************************
-	
-ReportError:
-		rep 	#$30 						; in case we changed it.
-		nop
-		bra 	ReportError
+		#error 	"Syntax Error"
 
 ; *******************************************************************************************
 ;
@@ -46,14 +44,16 @@ ReportError:
 ;
 ; *******************************************************************************************
 
-CheckNextComma:
+ExpectRightBracket:							; shorthand because right parenthesis common
+		lda 	#rparenTokenID
+		bra 	ExpectToken
+ExpectComma:
 		lda 	#commaTokenID 				; shorthand because comma is used a fair bit.
-CheckNextToken:
+ExpectToken:
 		cmp 	(DCodePtr) 					; does it match the next token
 		bne 	_CTKError					; error if not
 		inc 	DCodePtr 					; skip the token
 		inc 	DCodePtr
 		rts	
 _CTKError:
-		jsr 	ReportError					
-		.text	"Missing token",0
+		#error	"Missing token"

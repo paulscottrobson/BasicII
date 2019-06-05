@@ -184,8 +184,7 @@ CompareTypeCheck:
 	rts
 
 _CTCFail: 									; mixed comparison types
-	jsr 	ReportError
-	.text 	"Comparison must be same type",$00
+	#error 	"Comparison mixed types"
 
 _CTCStringCompare:
 	jsr 	ResetTypeInteger 				; two strings return integer not string.

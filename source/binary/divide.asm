@@ -21,8 +21,7 @@ Binary_Divide: ;; /
 	lda 	EXSValueL+2,x						; check for division by zero
 	ora	 	EXSValueH+2,x
 	bne 	_BinaryDivide_Ok
-	jsr 	ReportError							; error if so.
-	.text	"Division by zero",$00
+	#error	"Division by zero"
 
 _BinaryDivide_Ok:
 	stz 	DTemp1+0							; clear remainder (DTemp)
