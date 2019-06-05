@@ -38,9 +38,16 @@ class BasicBlock(object):
 			print("variable.asm *not* using this constant value.")
 			assert False
 	#
+	#		Import 
+	#
+	def importFile(self,fileName):
+		h = open(fileName,"rb")
+		self.data = bytes(h.read(-1))
+		h.close()
+	#
 	#		Write binary out
 	#
-	def export(self,fileName):
+	def exportFile(self,fileName):
 		h = open(fileName,"wb")
 		h.write(bytes(self.data))
 		h.close()
@@ -295,7 +302,7 @@ if __name__ == "__main__":
 	blk.addString("sx1$","this is a string")
 	blk.addIntegerArray("iar1(",132142,4)
 	blk.addStringArray("strarr01$(","ast",3)
-	blk.export("temp/basic.bin")	
+	blk.exportFile("temp/basic.bin")	
 	blk.exportConstants("temp/block.inc")
 	blk.listVariables()
 

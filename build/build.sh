@@ -8,4 +8,6 @@ tass64 --m65816 -f -q ../source/start.asm -o basic.bin -L basic.lst
 if [ -e basic.bin ]
 then
 ../emulator/m65816 basic.bin
+cp ../scripts/tokens.txt .
+python ../scripts/showdump.py
 fi
