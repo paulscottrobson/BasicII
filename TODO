@@ -1,12 +1,11 @@
 TODO:-
-	Make string concrete code
-	Create variables on assignment, error if array.
+	Create variables on assignment routine.
 	ASSERT
 	Execution.
 	Array allocation.
 
 Outstanding:
-	Allocating Memory for temp checks that it is possible.
-	Concreting String checks that it is possible a$="hello" could fail ?
+	Allocating Memory for temp strings checks that it is possible.
+	Concreting String checks that it is possible a$="hello" could fail.
 	Expand Expression stack (after testing) / Check Expression complexity limit.
 	Make Missing Token say which one (needs detokeniser)

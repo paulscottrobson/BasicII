@@ -18,8 +18,17 @@ Function_Let: ;; let
 		;
 		;		The variable doesn't exist, so we need to create it, except for arrays.
 		;		
-		nop
-		
+		pla 								; get the token back.
+		and 	#$0800 						; is it an array		
+		beq 	_FLetCreate 				; if so , create it.
+		#error 	"Unknown array"				; cannot auto instantiate arrays.
+_FLetCreate:
+		lda 	#$0000 						; maximum index - only 1 as variable.
+		ldy 	DCodePtr 					; address of the token in Y.
+		jsr 	CreateVariable 				; create variable in position.
+		jsr 	FindVariable 				; now we should be able to find it !
+		bcc 	_FLetFound
+		#error 	"INT:Variable" 				; if not, we have a *serious* problem.
 		;
 		;		We have identified the variable, now see which type.
 		;

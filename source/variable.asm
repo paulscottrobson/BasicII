@@ -44,13 +44,7 @@ _FVStandard:
 		asl 	a 							; double it, because it's a word address
 		sta 	DTemp1 						; save it
 		pla 								; restore first token.
-		xba 								; type bits were in 11 and 12, now they're in 3 and 4
-		and 	#$0018 						; isolate those type bits
-		asl 	a 							; This makes A = type bits x 16
-		asl 	a 							; A = type bits x 32 and clears carry.
-		adc 	DTemp1 						; add offset in the table
-		adc 	#BlockHashTable 			; now its an offset in the block
-		adc 	DBaseAddress 				; now it's an address
+		jsr 	VariableFirstTokenToHash 	; get the hash address
 		sta 	DTemp1 						; put it in DTemp1
 		;
 		;		Now, search through the linked list.
@@ -129,3 +123,29 @@ _FVIndexOkay:
 		clc 								; return with carry clear
 		rts
 
+; *******************************************************************************************
+;
+;			Utility : given the first token in A, get the address of the hash link.
+;
+; *******************************************************************************************
+
+VariableFirstTokenToHash:
+		xba 								; type bits were in 11 and 12, now they're in 3 and 4
+		and 	#$0018 						; isolate those type bits
+		asl 	a 							; This makes A = type bits x 16
+		asl 	a 							; A = type bits x 32 and clears carry.
+		adc 	DTemp1 						; add offset in the table
+		adc 	#BlockHashTable 			; now its an offset in the block
+		adc 	DBaseAddress 				; now it's an address
+		rts
+
+; *******************************************************************************************
+;
+;		Create the variable named at Y, with a high index of A - e.g. it has A+1
+;		units allocated to it.
+;
+; *******************************************************************************************
+
+CreateVariable:
+		nop
+		nop

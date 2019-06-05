@@ -60,3 +60,34 @@ _SCCCopy:
 		plx
 _SCCExit:
 		rts
+
+
+; *******************************************************************************************
+;
+;						Make String at A concrete, return new string in A
+;
+; *******************************************************************************************
+
+StringMakeConcrete:
+		sta 	DTemp1 						; source 
+		lda 	(DTemp1)					; get length
+		and 	#$00FF
+		pha 								; save on stack.
+		;
+		eor 	#$FFFF 						; 2's complement with carry clear
+		clc
+		ldy 	#BlockHighMemoryPtr 		; add to the high pointer to create space
+		adc 	(DBaseAddress),y
+		sta 	(DBaseAddress),y
+		sta 	DTemp2 						; target
+		;
+		ply 								; get length copy from here until Y goes -ve
+		sep 	#$20 						; 8 bit mode.
+_SMCLoop:
+		lda 	(DTemp1),y
+		sta 	(DTemp2),y
+		dey
+		bpl 	_SMCLoop
+		rep 	#$20 						; 16 bit mode.
+		lda 	DTemp2 						; return new string address.
+		rts

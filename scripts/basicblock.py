@@ -242,7 +242,6 @@ class BasicBlock(object):
 		for i in range(0,26):													# show non-zero fasts
 			addr = BasicBlock.FASTVARIABLES+i*4+self.baseAddress
 			data = self.readLong(addr)		
-			print(i,addr,data,self.readWord(addr),self.readWord(addr+2))
 			if data != 0:
 				handle.write("\t${0:04x} {1:10} {2:3} [${3:04x}]\n".format(addr,chr(i+97),0,data))
 		handle.write("\n")
@@ -302,7 +301,7 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'strarr01$(1) = "hello"')
+	blk.addBASICLine(10,'abc = 2*(x+6)+len(sx1$)')
 	blk.addInteger("minus2",-2)
 	blk.addInteger("x",44)
 	blk.addInteger("y",65540)
