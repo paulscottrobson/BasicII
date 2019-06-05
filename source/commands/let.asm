@@ -19,11 +19,12 @@ Function_Let: ;; let
 		;		The variable doesn't exist, so we need to create it, except for arrays.
 		;		
 		pla 								; get the token back.
+		pha 								; and save it again.
 		and 	#$0800 						; is it an array		
 		beq 	_FLetCreate 				; if so , create it.
 		#error 	"Unknown array"				; cannot auto instantiate arrays.
 _FLetCreate:
-		lda 	#$0000 						; maximum index - only 1 as variable.
+		lda 	#$0000 						; maximum index - only 1 as cd	variable.
 		ldy 	DCodePtr 					; address of the token in Y.
 		jsr 	CreateVariable 				; create variable in position.
 		jsr 	FindVariable 				; now we should be able to find it !

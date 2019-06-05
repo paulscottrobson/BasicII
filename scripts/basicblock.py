@@ -238,7 +238,7 @@ class BasicBlock(object):
 	#
 	def listVariables(self,handle = sys.stdout):
 		types = [ "","()","$","$()" ]
-		handle.write("Integer Fast\n")
+		handle.write("Integer Fast Variables A-Z\n")
 		for i in range(0,26):													# show non-zero fasts
 			addr = BasicBlock.FASTVARIABLES+i*4+self.baseAddress
 			data = self.readLong(addr)		
@@ -275,7 +275,7 @@ class BasicBlock(object):
 	def getData(self,address,count,isString):
 		dataList = [self.readLong(address+4*x) for x in range(0,count+1)]
 		if isString:
-			dataList = ['"'+self.readString(x)+'"' for x in dataList]
+			dataList = ['"{0}"@${1:04x}'.format(self.readString(x),x) for x in dataList]
 		else:
 			dataList = ["${0:x}".format(x) for x in dataList]
 		return ",".join(dataList)
@@ -301,7 +301,7 @@ BasicBlock.HASHMASK = 15 														# Hash mask (0,1,3,7,15)
 
 if __name__ == "__main__":
 	blk = BasicBlock(0x4000,0x8000)
-	blk.addBASICLine(10,'abc = 2*(x+6)+len(sx1$)')
+	blk.addBASICLine(10,'i1ab$ = "["+strarr01$(2)+"]"')
 	blk.addInteger("minus2",-2)
 	blk.addInteger("x",44)
 	blk.addInteger("y",65540)

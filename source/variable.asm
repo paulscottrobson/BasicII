@@ -39,11 +39,6 @@ FindVariable:
 		;		Okay ... it's a standard variable. First we find out which hash entry.
 		;
 _FVStandard:
-		pha 								; save first token
-		and 	#BlockHashMask 				; create a hash index
-		asl 	a 							; double it, because it's a word address
-		sta 	DTemp1 						; save it
-		pla 								; restore first token.
 		jsr 	VariableFirstTokenToHash 	; get the hash address
 		sta 	DTemp1 						; put it in DTemp1
 		;
@@ -126,10 +121,19 @@ _FVIndexOkay:
 ; *******************************************************************************************
 ;
 ;			Utility : given the first token in A, get the address of the hash link.
+;										(Breaks DTemp1)
+;
+;		Note : if BasicBlock.HASHTABLESIZE is changed, then this will have to follow
+;			   it as the "x 32" is done without multiplication for speed reasons.
 ;
 ; *******************************************************************************************
 
 VariableFirstTokenToHash:
+		pha 								; save token
+		and 	#BlockHashMask 				; create a hash index
+		asl 	a 							; double it, because it's a word address
+		sta 	DTemp1 						; save it
+		pla 								; restore first token.
 		xba 								; type bits were in 11 and 12, now they're in 3 and 4
 		and 	#$0018 						; isolate those type bits
 		asl 	a 							; This makes A = type bits x 16
@@ -147,5 +151,59 @@ VariableFirstTokenToHash:
 ; *******************************************************************************************
 
 CreateVariable:
-		nop
-		nop
+		phy 								; save the name on the stack.
+		pha 								; save the high index on the stack.
+		;
+		;		Get the hash address.
+		;
+		lda 	$0000,y 					; first token of identifier
+		jsr 	VariableFirstTokenToHash 	; convert to hash link address
+		sta 	DSignCount 					; save in another temporary variable.
+		;
+		;		Get the size back,Work out the memory required
+		;
+		pla 								; restore size, push back
+		pha
+		inc 	a 							; one extra as it is 0..A
+		asl 	a 							; 4 bytes
+		asl 	a 							; also does CLC.
+		adc 	#6 							; this is the header (link,name,size)
+		sta 	DTemp1						; save total bytes required.
+		;
+		;		Allocate from low memory.
+		;
+		ldy 	#BlockLowMemoryPtr 			; get the address of the next free byte
+		lda 	(DBaseAddress),y 			; save it on the stack for later.
+		pha
+		clc 								; add bytes required and write back
+		adc 	DTemp1
+		sta 	(DBaseAddress),y 			
+		pla 								; DTemp2 now points to the variable.
+		sta 	DTemp2
+		;
+		;		Erase the new variable memory.
+		;
+		ldy		#0 							; erase the new variable
+_CRVErase:
+		lda 	#$0000
+		sta 	(DTemp2),y
+		iny
+		iny
+		cpy 	DTemp1
+		bne 	_CRVErase
+		;
+		;		Copy the name and high index into the new variable.
+		;
+		ldy 	DTemp2 						; Y is address of new variable.
+		pla 								; restore the high index
+		sta 	$0004,y
+		pla 								; restore the name.
+		sta 	$0002,y
+		;
+		;		Link it in to the variable list.
+		;
+		lda 	(DSignCount) 				; get the address in the current link.
+		sta 	$0000,y 					; save as the link to the next
+		tya 	
+		sta 	(DSignCount)				; this record is the new head of list.
+		rts

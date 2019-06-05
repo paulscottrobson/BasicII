@@ -1,10 +1,13 @@
 TODO:-
-	Create variables on assignment routine.
 	ASSERT
 	Execution.
+	Testing of assignment
+	Testing of basic arithmetic
 	Array allocation.
+	Extend testing to include arrays.
 
 Outstanding:
+	Allocating Variable Memory check possible.
 	Allocating Memory for temp strings checks that it is possible.
 	Concreting String checks that it is possible a$="hello" could fail.
 	Expand Expression stack (after testing) / Check Expression complexity limit.
